@@ -1,15 +1,61 @@
 (ns jute.core
   (:refer-clojure :exclude [compile])
-  (:require [clojure.set :as cset]))
+  (:require [clojure.set :as cset]
+            [instaparse.core :as insta]))
+
+(def expression-parser
+  (insta/parser
+   "
+<root> = <('$' #'\\s+')?> expr
+
+expr
+  = additive-expr
+
+additive-expr
+  = multiplicative-expr <whitespace> ? ('+' / '-') <whitespace> ? additive-expr
+  / multiplicative-expr
+
+multiplicative-expr
+  = unary-expr <whitespace> ? ('*' / '/') <whitespace> ? multiplicative-expr
+  / unary-expr
+
+unary-expr
+  = ('+' / '-' / '!') operand
+  / operand
+
+<operand>
+  = num-literal
+  / path
+
+(* PATHS *)
+
+path
+  = path-head (<'.'> path-component)*
+
+<path-head>
+  = #'[a-zA-Z_]+'
+
+<path-component>
+  = #'[a-zA-Z_0-9]+'
+
+(* LITERALS *)
+
+num-literal
+  = ('+' / '-')? #'[0-9]+' ('.' #'[0-9]'*)?
+
+(* STUFF *)
+<whitespace>
+  = (' ' / '\t' / '\n')+
+"))
 
 (def template
-  {:foo 12
+  {:foo "$ 2 + 3 * foo.bar"
 
    :const {:a 12
            :b []
            :c true}
 
-   :bar {:$if false
+   :bar {:$if "$ foo.bar"
          :$then "bar"
          :$else "baz"}})
 
@@ -19,9 +65,9 @@
   (if (fn? n) (n scope) n))
 
 (defn- compile-if [node]
-  (let [compiled-if (compile (:$if node))
-        compiled-then (compile (:$then node))
-        compiled-else (compile (:$else node))]
+  (let [compiled-if (compile* (:$if node))
+        compiled-then (compile* (:$then node))
+        compiled-else (compile* (:$else node))]
 
     (if (fn? compiled-if)
       (fn [scope]
@@ -62,21 +108,80 @@
       ((get directives (first directive-keys)) node))))
 
 (defn- compile-vector [node]
-  (let [result (mapv compile node)]
+  (let [result (mapv compile* node)]
     (if (some fn? result)
       (fn [scope]
         (mapv #(eval-node % scope) result))
 
       result)))
 
-(defn- compile-primitive [node]
-  node)
+(def operator-to-fn
+  {"+" clojure.core/+
+   "-" clojure.core/-
+   "*" clojure.core/*
+   "/" clojure.core//})
+
+(declare compile-expression-ast)
+
+(defn- compile-expr-expr [ast]
+  (compile-expression-ast (second ast)))
+
+(defn- compile-additive-or-multiplicative-expr [[_ left op right]]
+  (if right
+    (let [f (operator-to-fn op)
+          compiled-left (compile-expression-ast left)
+          compiled-right (compile-expression-ast right)]
+      (fn [scope] (f (eval-node compiled-left scope) (eval-node compiled-right scope))))
+
+    (compile-expression-ast left)))
+
+(defn- compile-unary-expr [ast]
+  (if (= 2 (count ast))
+    (compile-expression-ast (last ast))
+
+    (let [f (operator-to-fn (second ast))
+          operand (compile-expression-ast (last ast))]
+      (fn [scope] (f (eval-node operand scope))))))
+
+(defn- compile-num-literal [ast]
+  (read-string (apply str (rest ast))))
+
+(defn- compile-path [ast]
+  (fn [scope] (get-in scope (map keyword (rest ast)))))
+
+(def expressions-compile-fns
+  {:expr compile-expr-expr
+   :additive-expr compile-additive-or-multiplicative-expr
+   :multiplicative-expr compile-additive-or-multiplicative-expr
+   :unary-expr compile-unary-expr
+   :num-literal compile-num-literal
+   :path compile-path})
+
+(defn- compile-expression-ast [ast]
+  (let [compile-fn (get expressions-compile-fns (first ast))]
+    (compile-fn ast)))
+
+(defn- compile-string [node]
+  (if (.startsWith node "$")
+    (-> node
+        (expression-parser)
+        (first)
+        (compile-expression-ast))
+
+    node))
+
+(defn compile* [node]
+  (cond
+    (map? node) (compile-map node)
+    (vector? node) (compile-vector node)
+    (string? node) (compile-string node)
+    :else node))
 
 (defn compile
   "Compiles JUTE template into invocabe function."
   [node]
 
-  (cond
-    (map? node) (compile-map node)
-    (vector? node) (compile-vector node)
-    :else (compile-primitive node)))
+  (let [result (compile* node)]
+    (if (fn? result)
+      result
+      (constantly result))))
