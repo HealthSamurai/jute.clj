@@ -55,11 +55,11 @@ num-literal
            :b []
            :c true}
 
-   :bar {:$if "$ foo.bar"
-         :$then "bar"
-         :$else "baz"}})
+   :bar {:$if "$ foo.baz"
+         :$then "there is a foo.baz in the scope"
+         :$else "there is no foo.baz in the scope"}})
 
-(declare compile)
+(declare compile*)
 
 (defn- eval-node [n scope]
   (if (fn? n) (n scope) n))
@@ -92,7 +92,7 @@ num-literal
 
     (if (empty? directive-keys)
       (let [result (reduce (fn [acc [key val]]
-                             (let [compiled-val (compile val)]
+                             (let [compiled-val (compile* val)]
                                (-> acc
                                    (assoc-in [:result key] compiled-val)
                                    (assoc :dynamic? (or (:dynamic? acc) (fn? compiled-val))))))
