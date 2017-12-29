@@ -44,20 +44,21 @@ num-literal
   = ('+' / '-')? #'[0-9]+' ('.' #'[0-9]'*)?
 
 (* STUFF *)
+
 <whitespace>
   = (' ' / '\t' / '\n')+
 "))
 
 (def template
-  {:foo "$ 2 + 3 * foo.bar"
+  {:arithmetic-result "$ 2 + 3 * foo.bar"
 
-   :const {:a 12
-           :b []
-           :c true}
+   :const-result {:a 12
+                  :b []
+                  :c true}
 
-   :bar {:$if "$ foo.baz"
-         :$then "there is a foo.baz in the scope"
-         :$else "there is no foo.baz in the scope"}})
+   :if-resutl {:$if "$ foo.baz"
+               :$then "there is a foo.baz in the scope"
+               :$else "there is no foo.baz in the scope"}})
 
 (declare compile*)
 
