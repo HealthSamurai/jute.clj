@@ -8,24 +8,31 @@
    "
 <root> = <('$' #'\\s+')?> expr
 
-expr
-  = additive-expr
+<expr>
+  = unary-expr
+  | and-expr
+  | or-expr
+  | multiplicative-expr
+  | additive-expr
+  | path
+  | num-literal
+  | bool-literal
+  | <'('> expr <')'>
 
 additive-expr
-  = multiplicative-expr <whitespace> ? ('+' / '-') <whitespace> ? additive-expr
-  / multiplicative-expr
+  = expr <whitespace> ? ('+' | '-') <whitespace> ? expr
 
 multiplicative-expr
-  = unary-expr <whitespace> ? ('*' / '/') <whitespace> ? multiplicative-expr
-  / unary-expr
+  = expr <whitespace> ? ('*' | '/') <whitespace> ? expr
+
+or-expr
+  = expr <whitespace> ? <'|' '|'> <whitespace> ? expr
+
+and-expr
+  = expr <whitespace> ? <'&' '&'> <whitespace> ? expr
 
 unary-expr
-  = ('+' / '-' / '!') operand
-  / operand
-
-<operand>
-  = num-literal
-  / path
+  = ('+' | '-' | '!') expr
 
 (* PATHS *)
 
@@ -41,12 +48,15 @@ path
 (* LITERALS *)
 
 num-literal
-  = ('+' / '-')? #'[0-9]+' ('.' #'[0-9]'*)?
+  = #'[0-9]+' ('.' #'[0-9]'*)?
+
+bool-literal
+  = 't' | 'f'
 
 (* STUFF *)
 
 <whitespace>
-  = (' ' / '\t' / '\n')+
+  = (' ' | '\t' | '\n')+
 "))
 
 (def template
@@ -56,9 +66,20 @@ num-literal
                   :b []
                   :c true}
 
-   :if-resutl {:$if "$ foo.baz"
+   :let-example {:$let [{:local "$ foo.bar"}]
+                 :$body {:abc "$ local + 5"}}
+
+   :if-result {:$if "$ foo.baz"
                :$then "there is a foo.baz in the scope"
                :$else "there is no foo.baz in the scope"}})
+
+(defmulti compile-expr first)
+
+(defmethod compile-expr :expr [node]
+  (compile-expr (second node)))
+
+(defmethod compile-expr :additive-expr [node]
+  (compile-expr (second node)))
 
 (declare compile*)
 
@@ -80,8 +101,21 @@ num-literal
         compiled-then
         compiled-else))))
 
+(defn- compile-let [node]
+  (let [compiled-locals (doall (map (fn [v]
+                                      [(first (keys v)) (compile* (first (vals v)))])
+                                    (:$let node)))
+        compiled-body (compile* (:$body node))]
+
+    (fn [scope]
+      (let [new-scope (reduce (fn [acc [n v]]
+                                (assoc acc n (eval-node v acc)))
+                              scope compiled-locals)]
+        (eval-node compiled-body new-scope)))))
+
 (def directives
-  {:$if compile-if})
+  {:$if compile-if
+   :$let compile-let})
 
 (defn- compile-map [node]
   (let [directive-keys (cset/intersection (set (keys node)) (set (keys directives)))]
@@ -122,10 +156,10 @@ num-literal
    "*" clojure.core/*
    "/" clojure.core//})
 
-(declare compile-expression-ast)
+;; (declare compile-expression-ast)
 
-(defn- compile-expr-expr [ast]
-  (compile-expression-ast (second ast)))
+;; (defn- compile-expr-expr [ast]
+;;   (compile-expression-ast (second ast)))
 
 (defn- compile-additive-or-multiplicative-expr [[_ left op right]]
   (if right
