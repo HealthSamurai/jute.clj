@@ -3,47 +3,82 @@
   (:require [clojure.set :as cset]
             [instaparse.core :as insta]))
 
+;; operator precedence:
+;; unary ops & not op
+;; mult, div and reminder
+;; plus / minus
+;; comparison (le, ge, etc)
+;; equal, not equal
+;; logical and
+;; logical or
+
 (def expression-parser
   (insta/parser
    "
 <root> = <('$' #'\\s+')?> expr
 
 <expr>
-  = unary-expr
+  = or-expr
   | and-expr
-  | or-expr
-  | multiplicative-expr
+  | equality-expr
+  | comparison-expr
   | additive-expr
-  | path
-  | num-literal
-  | bool-literal
-  | <'('> expr <')'>
+  | multiplicative-expr
+  | unary-expr
+  | terminal-expr
+
+<parens-expr>
+  = <'('> expr <')'>
+
+comparison-expr
+  = comparison-expr ('>' | '<' | '>=' | '<=') additive-expr | additive-expr
 
 additive-expr
-  = expr <whitespace> ? ('+' | '-') <whitespace> ? expr
+  = additive-expr  ('+' | '-') multiplicative-expr | multiplicative-expr
 
 multiplicative-expr
-  = expr <whitespace> ? ('*' | '/') <whitespace> ? expr
-
-or-expr
-  = expr <whitespace> ? <'|' '|'> <whitespace> ? expr
+  = multiplicative-expr ('*' | '/' | '%') unary-expr | unary-expr
 
 and-expr
-  = expr <whitespace> ? <'&' '&'> <whitespace> ? expr
+  = and-expr <'&&'> equality-expr | equality-expr
+
+or-expr
+  = or-expr <'||'> and-expr | and-expr
+
+equality-expr
+  = equality-expr ('=' | '!=') comparison-expr | comparison-expr
 
 unary-expr
-  = ('+' | '-' | '!') expr
+  = ('+' | '-' | '!') expr | terminal-expr
+
+<terminal-expr>
+  = bool-literal / num-literal / string-literal / path / parens-expr
 
 (* PATHS *)
 
 path
   = path-head (<'.'> path-component)*
+  | parens-expr (<'.'> path-component)+
+  | '@' (<'.'> path-component)*
 
 <path-head>
   = #'[a-zA-Z_]+'
 
 <path-component>
   = #'[a-zA-Z_0-9]+'
+  | path-predicate
+  | path-deep-wildcard
+  | path-wildcard
+  | parens-expr
+
+path-predicate
+  = <'*'> parens-expr
+
+path-deep-wildcard
+  = <'**'>
+
+path-wildcard
+  = <'*'>
 
 (* LITERALS *)
 
@@ -51,13 +86,12 @@ num-literal
   = #'[0-9]+' ('.' #'[0-9]'*)?
 
 bool-literal
-  = 't' | 'f'
+  = 'true' !path-head | 'false' !path-head
 
-(* STUFF *)
-
-<whitespace>
-  = (' ' | '\t' | '\n')+
-"))
+string-literal
+  = <'\"'> #'[^\"]*'  <'\"'>
+"
+   :auto-whitespace :standard))
 
 (def template
   {:arithmetic-result "$ 2 + 3 * foo.bar"
@@ -69,17 +103,9 @@ bool-literal
    :let-example {:$let [{:local "$ foo.bar"}]
                  :$body {:abc "$ local + 5"}}
 
-   :if-result {:$if "$ foo.baz"
-               :$then "there is a foo.baz in the scope"
+   :if-result {:$if "$ foo.baz = 42 && foo.bar = 42"
+               :$then "there is a foo.baz in the scope and it equals 42"
                :$else "there is no foo.baz in the scope"}})
-
-(defmulti compile-expr first)
-
-(defmethod compile-expr :expr [node]
-  (compile-expr (second node)))
-
-(defmethod compile-expr :additive-expr [node]
-  (compile-expr (second node)))
 
 (declare compile*)
 
@@ -102,9 +128,12 @@ bool-literal
         compiled-else))))
 
 (defn- compile-let [node]
-  (let [compiled-locals (doall (map (fn [v]
-                                      [(first (keys v)) (compile* (first (vals v)))])
-                                    (:$let node)))
+  (let [lets (:$let node)
+        compiled-locals (mapv (fn [[k v]] [k (compile* v)])
+                              (if (vector? lets)
+                                (mapv (fn [i] [(first (keys i)) (first (vals i))]) lets)
+                                (mapv (fn [[k v]] [k v]) lets)))
+
         compiled-body (compile* (:$body node))]
 
     (fn [scope]
@@ -154,19 +183,51 @@ bool-literal
   {"+" clojure.core/+
    "-" clojure.core/-
    "*" clojure.core/*
+   "%" clojure.core/rem
+   "=" clojure.core/=
+   "!=" clojure.core/not=
+   ">" clojure.core/>
+   "<" clojure.core/<
+   ">=" clojure.core/>=
+   "<=" clojure.core/<=
    "/" clojure.core//})
 
-;; (declare compile-expression-ast)
+(declare compile-expression-ast)
 
-;; (defn- compile-expr-expr [ast]
-;;   (compile-expression-ast (second ast)))
+(defn- compile-expr-expr [ast]
+  (compile-expression-ast (second ast)))
 
-(defn- compile-additive-or-multiplicative-expr [[_ left op right]]
+(defn- compile-op-expr [[_ left op right]]
   (if right
-    (let [f (operator-to-fn op)
-          compiled-left (compile-expression-ast left)
+    (if-let [f (operator-to-fn op)]
+      (let [compiled-left (compile-expression-ast left)
+            compiled-right (compile-expression-ast right)]
+
+        (if (or (fn? compiled-left) (fn? compiled-right))
+          (fn [scope] (f (eval-node compiled-left scope) (eval-node compiled-right scope)))
+          (f compiled-left compiled-right)))
+
+      (throw (RuntimeException. (str "Cannot guess operator for: " op))))
+
+    (compile-expression-ast left)))
+
+(defn- compile-and-expr [[_ left right]]
+  (if right
+    (let [compiled-left (compile-expression-ast left)
           compiled-right (compile-expression-ast right)]
-      (fn [scope] (f (eval-node compiled-left scope) (eval-node compiled-right scope))))
+      (if (or (fn? compiled-left) (fn? compiled-right))
+        (fn [scope] (and (eval-node compiled-left scope) (eval-node compiled-right scope)))
+        (and compiled-left compiled-right)))
+
+    (compile-expression-ast left)))
+
+(defn- compile-or-expr [[_ left right]]
+  (if right
+    (let [compiled-left (compile-expression-ast left)
+          compiled-right (compile-expression-ast right)]
+      (if (or (fn? compiled-left) (fn? compiled-right))
+        (fn [scope] (or (eval-node compiled-left scope) (eval-node compiled-right scope)))
+        (or compiled-left compiled-right)))
 
     (compile-expression-ast left)))
 
@@ -181,20 +242,48 @@ bool-literal
 (defn- compile-num-literal [ast]
   (read-string (apply str (rest ast))))
 
-(defn- compile-path [ast]
-  (fn [scope] (get-in scope (map keyword (rest ast)))))
+(defn- compile-bool-literal [[_ v]]
+  (= v "true"))
+
+(defn- compile-string-literal [[_ v]]
+  v)
+
+(defn- compile-path-component [cmp]
+  (cond
+    (string? cmp) (keyword cmp)
+    (vector? cmp)
+    (let [[t arg] cmp]
+      (cond
+        (= :wildcard t) (fn [scope])))))
+
+(defn- compile-path [[_ & path-comps]]
+  (let [compiled-comps (mapv compile-path-component path-comps)]
+    (fn [scope]
+      (loop [[cmp & tail] compiled-comps
+             scope scope]
+        (let [next-scope (if (fn? cmp) (cmp scope) (get scope cmp))]
+          (if (empty? tail)
+            next-scope
+            (recur tail next-scope)))))))
 
 (def expressions-compile-fns
   {:expr compile-expr-expr
-   :additive-expr compile-additive-or-multiplicative-expr
-   :multiplicative-expr compile-additive-or-multiplicative-expr
+   :additive-expr compile-op-expr
+   :multiplicative-expr compile-op-expr
+   :and-expr compile-and-expr
+   :or-expr compile-or-expr
+   :equality-expr compile-op-expr
+   :comparison-expr compile-op-expr
    :unary-expr compile-unary-expr
    :num-literal compile-num-literal
+   :bool-literal compile-bool-literal
+   :string-literal compile-string-literal
    :path compile-path})
 
 (defn- compile-expression-ast [ast]
-  (let [compile-fn (get expressions-compile-fns (first ast))]
-    (compile-fn ast)))
+  (if-let [compile-fn (get expressions-compile-fns (first ast))]
+    (compile-fn ast)
+    (throw (RuntimeException. (str "Cannot find compile function for node " ast)))))
 
 (defn- compile-string [node]
   (if (.startsWith node "$")
