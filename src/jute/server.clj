@@ -1,6 +1,6 @@
 (ns jute.server
   (:require
-   [jute.alt :as jute-alt]
+   [jute.core :as jute]
    [cheshire.core :as json]
    [clj-yaml.core :as yaml]
    [ring.middleware.resource :refer [wrap-resource]]
@@ -16,7 +16,7 @@
     (let [{j :jute s :source} (json/parse-string (slurp (:body req)) keyword)
           prg (yaml/parse-string j)
           subj (yaml/parse-string s)
-          res ((jute-alt/compile prg) subj)]
+          res ((jute/compile prg) subj)]
       {:status 200
        :headers {"content-type" "text/yaml"}
        :body (yaml/generate-string res :flow-style :block)})

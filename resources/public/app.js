@@ -4,11 +4,10 @@ const codeMirror = CodeMirror;
 // require("codemirror/addon/lint/yaml-lint.js");
 // require("codemirror/lib/codemirror.css");
 
-
 const yaml = YAML;
 const debounce = (func, delay) => {
   let inDebounce;
-  return function(){
+  return function() {
     const context = this;
     const args = arguments;
     clearTimeout(inDebounce);
@@ -19,14 +18,16 @@ const debounce = (func, delay) => {
 var pathNode = document.getElementById("path");
 var outNode = document.getElementById("output");
 
-function evaluate(){
-  try  {
-    var inputType = document.querySelector('input[name="inputType"]:checked').value
+function evaluate() {
+  try {
+    var inputType = document.querySelector('input[name="inputType"]:checked')
+      .value;
     var inputText = cm.getValue();
-    var res = inputType === 'yaml' ? yaml.load(inputText) : JSON.parse(inputText);
+    var res =
+      inputType === "yaml" ? yaml.load(inputText) : JSON.parse(inputText);
     console.log(pathNode.value, res);
     var result = fhirpath.evaluate(res, pathNode.value);
-    outNode.innerHTML = '<pre />';
+    outNode.innerHTML = "<pre />";
     outNode.childNodes.item(0).textContent = yaml.dump(result);
   } catch (e) {
     outNode.innerHTML = '<pre style="color: red;" />';
@@ -35,77 +36,89 @@ function evaluate(){
   }
 }
 
-
 var example = {
-  $let: {prefix: "Mr"},
+  $let: {
+    prefix: "Mr",
+    greetFn: {
+      $fn: ["subj", "greeting"],
+      $body: '$ greeting + prefix + " " + subj'
+    }
+  },
   $body: {
-    fist_name: "$ name.given.first()",
-    last_name: "$ name.family.first()",
+    fist_name: "$fp name.given.first()",
+    last_name: "$fp name.family.first()",
+    greeting_a: '$ greetFn("world", "hello, ")',
+    greeting_b: '$ greetFn("sandman", "bring me a dream, ")',
     map: {
-      $map: '$ name',
-      $as: 'x',
+      $map: "$ name",
+      $as: "x",
       $body: {
-        name: "$ %prefix & ' ' &  %x.given.first() & ' ' & %x.family.first()"
+        name: "$fp %prefix & ' ' &  %x.given.first() & ' ' & %x.family.first()"
       }
     },
     sex: {
-      $if: "$ gender = 'Male'",
-      $then: 'M',
-      $else: 'F'
+      $if: "$fp gender = 'Male'",
+      $then: "M",
+      $else: "F"
     },
     letandif: {
-      $let: [{x: 2}],
-      $body: {$if: "$ a = 1",
-              $then: 1,
-              $else: "$ b"}
+      $let: { x: 2 },
+      $body: {
+        $if: "$ a = 1",
+        $then: 1,
+        $else: "$ b"
+      }
     }
-  }};
+  }
+};
 
 var jute = codeMirror(document.getElementById("jute"), {
   value: yaml.stringify(example, 100, 2),
   lineNumbers: true,
-  mode:  "yaml"
+  mode: "yaml"
 });
 
 var baseUrl = "/";
-var juteChanged = (x)=>{
+var juteChanged = x => {
   fetch(baseUrl, {
-    method: 'POST',
+    method: "POST",
     body: JSON.stringify({
       jute: jute.getValue(),
-      source: source.getValue() 
+      source: source.getValue()
     })
-  }).then((resp)=>{
-    return resp.text();
-  }).then((res)=>{
-    target.setValue(res);
-  }) ;
+  })
+    .then(resp => {
+      return resp.text();
+    })
+    .then(res => {
+      target.setValue(res);
+    });
 };
 
-jute.on('change', debounce(juteChanged, 300));
+jute.on("change", debounce(juteChanged, 300));
 
 var pt = {
   resourceType: "Patient",
   a: 2,
   b: "Hoho",
-  gender: 'Male',
+  gender: "Male",
   name: [
-    {use: "official", given: ["Nikolai"], family: "Ryzhikov"},
-    {user: "alias", given: ["Nik"], family: "Got"}
+    { use: "official", given: ["Nikolai"], family: "Ryzhikov" },
+    { user: "alias", given: ["Nik"], family: "Got" }
   ]
 };
 
 var source = codeMirror(document.getElementById("source"), {
   value: yaml.stringify(pt, null, 2),
   lineNumbers: true,
-  mode:  "yaml"
+  mode: "yaml"
 });
 
-source.on('change', debounce(juteChanged, 300));
+source.on("change", debounce(juteChanged, 300));
 
 juteChanged();
 
 var target = codeMirror(document.getElementById("result"), {
   lineNumbers: true,
-  mode:  "yaml"
+  mode: "yaml"
 });
