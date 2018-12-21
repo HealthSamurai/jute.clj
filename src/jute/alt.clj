@@ -66,6 +66,7 @@
            :$as "x"
            :$body {:xx "$ %x + 1"}})
 
-(*compile {:$let [{:a 1} {:b 2}]})
+(*compile {:$let [{:a 1} {:b 2}]
+           :$body {:a "$ %a"}})
 
 (*compile {:$let {:a 1 :b 2}})

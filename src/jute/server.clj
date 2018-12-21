@@ -4,7 +4,8 @@
    [cheshire.core :as json]
    [clj-yaml.core :as yaml]
    [ring.middleware.resource :refer [wrap-resource]]
-   [org.httpkit.server :as server]))
+   [org.httpkit.server :as server])
+  (:gen-class))
 
 
 (defonce server (atom nil))
@@ -28,10 +29,13 @@
 
 (defn start [port]
   (stop)
+  (println "Start webserver on " port)
   (reset! server (server/run-server #'dispatch {:port (or port 7896)})))
 
 
+(defn -main [& args]
+  (start 8080))
+
 (comment
   (start 7896)
-
   )
