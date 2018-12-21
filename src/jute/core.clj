@@ -2,6 +2,7 @@
   (:refer-clojure :exclude [compile])
   (:require [clojure.set :as cset]
             [instaparse.core :as insta]
+            [clojure.string :as str]
             [fhirpath.core :as fhirpath]))
 
 ;; operator precedence:
@@ -53,7 +54,13 @@ unary-expr
   = ('+' | '-' | '!') expr | terminal-expr
 
 <terminal-expr>
-  = bool-literal / num-literal / string-literal / path / parens-expr
+  = bool-literal / num-literal / string-literal / fn-call / path / parens-expr
+
+fn-call
+  = #'[a-zA-Z_]+' <'('> fn-call-args <')'>
+
+<fn-call-args>
+  = (expr (<','> expr) *)?
 
 (* PATHS *)
 
@@ -143,10 +150,20 @@ string-literal
                               scope compiled-locals)]
         (eval-node compiled-body new-scope)))))
 
+(defn- compile-fn-directive [node]
+  (let [arg-names (map keyword (:$fn node))
+        compiled-body (compile* (:$body node))]
+
+    (fn [scope]
+      (fn [& args]
+        (let [new-scope (merge scope (zipmap arg-names args))]
+          (eval-node compiled-body new-scope))))))
+
 (def directives
   {:$if compile-if
    :$let compile-let
-   :$map compile-map-directive})
+   :$map compile-map-directive
+   :$fn compile-fn-directive})
 
 (defn- compile-map [node]
   (let [directive-keys (cset/intersection (set (keys node)) (set (keys directives)))]
@@ -182,7 +199,7 @@ string-literal
       result)))
 
 (def operator-to-fn
-  {"+" clojure.core/+
+  {"+" (fn [a b] (if (string? a) (str a b) (+ a b)))
    "-" clojure.core/-
    "*" clojure.core/*
    "%" clojure.core/rem
@@ -195,6 +212,10 @@ string-literal
    "/" clojure.core//})
 
 (declare compile-expression-ast)
+
+(def standard-fns
+  {:join str/join
+   :println println})
 
 (defn- compile-expr-expr [ast]
   (compile-expression-ast (second ast)))
@@ -212,6 +233,14 @@ string-literal
       (throw (RuntimeException. (str "Cannot guess operator for: " op))))
 
     (compile-expression-ast left)))
+
+(defn- compile-fn-call [[_ fn-name & args]]
+  (let [compiled-args (mapv compile-expression-ast args)
+        f (get standard-fns (keyword fn-name))]
+    (fn [scope]
+      (let [f (or f (get scope (keyword fn-name)))]
+        (assert (and f (fn? f)) (str "Unknown function: " fn-name))
+        (apply f (mapv #(eval-node % scope) compiled-args))))))
 
 (defn- compile-and-expr [[_ left right]]
   (if right
@@ -280,6 +309,7 @@ string-literal
    :num-literal compile-num-literal
    :bool-literal compile-bool-literal
    :string-literal compile-string-literal
+   :fn-call compile-fn-call
    :path compile-path})
 
 (defn- compile-expression-ast [ast]

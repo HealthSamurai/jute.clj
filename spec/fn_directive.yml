@@ -1,0 +1,29 @@
+---
+suite: $fn directive
+tests:
+  - desc: allows to declare function to be callable from expresssion
+    scope:
+      foo: 1.0
+    template:
+      $let:
+        fooToBar:
+          $fn: [fooArg, otherArg]
+          $body: $ fooArg + 3 - otherArg
+      $body: $ foo + fooToBar(foo, 3.0)
+
+    result: 2.0
+
+  - desc: fn directive can into closures
+    scope:
+      foo: 1.0
+    template:
+      $let:
+        someStuff: "world"
+      $body:
+        $let:
+          greetStuff:
+            $fn: [greeting]
+            $body: $ greeting + someStuff
+        $body: $ greetStuff("hello, ")
+
+    result: hello, world
