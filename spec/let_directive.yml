@@ -1,0 +1,40 @@
+---
+suite: $let directive
+tests:
+  - desc: adds specified variables into scope and
+      evaluates into its $body
+
+    scope:
+      foo: 1
+    template:
+      $let:
+        firstVar: $ foo + 1
+        secondVar:
+          key: hello world!
+      $body:
+        foo: $ foo
+        firstVar: $ firstVar
+        secondVarKey: $ secondVar.key
+
+    result:
+      foo: 1
+      firstVar: 2
+      secondVarKey: hello world!
+
+  - desc: allow vars to be declared as array, evaluates in
+      same order as declared, allows to use values of already
+      evaluated vars
+
+    scope:
+      foo: 1
+    template:
+      $let:
+        - var: $ foo + 1
+        - result: $ var + 5
+        - result: $ result - 3
+        - result: $ result / 2
+      $body:
+        result: $ result
+
+    result:
+      result: 2

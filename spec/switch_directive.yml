@@ -1,0 +1,37 @@
+---
+suite: $switch directive
+tests:
+  - desc: evaluates expression and picks attribute
+      with corresponding name
+
+    scope:
+      foo: 1
+    template:
+      $switch: $ foo + 1
+      1: "wrong"
+      2: "right"
+
+    result: "right"
+
+  - desc: use '$default' attribute when there is no
+      attribute with corresponding name
+
+    scope:
+      foo: 1
+
+    template:
+      $switch: $ foo
+      bar: 'bar'
+      $default: $ foo + 1
+
+    result: 2
+
+  - desc: evaluates to null when there is no correct
+      attribute and '$default' attribute
+
+    scope: null
+    template:
+      $switch: $ foo
+      bar: 'bar'
+
+    result: null

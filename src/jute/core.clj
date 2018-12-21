@@ -94,28 +94,28 @@ string-literal
 "
    :auto-whitespace :standard))
 
-(def template
-  {:arithmetic-result "$ 2 + 3 * foo.bar"
-
-   :const-result {:a 12
-                  :b []
-                  :c true}
-
-   :let-example {:$let [{:local "$ foo.bar"}]
-                 :$body {:abc "$ local + 5"}}
-
-   :if-result {:$if "$ foo.baz = 42 && foo.bar = 42"
-               :$then "there is a foo.baz in the scope and it equals 42"
-               :$else "there is no foo.baz in the scope"}})
-
 (declare compile*)
 
 (defn- eval-node [n scope]
   (if (fn? n) (n scope) n))
 
+(defn- compile-map-directive [node]
+  (let [compiled-map (compile* (:$map node))
+        var-name (keyword (:$as node))
+        compiled-body (compile* (:$body node))]
+
+    (fn [scope]
+      (let [coll (eval-node compiled-map scope)]
+        (mapv (if (map? coll)
+                (fn [[k v]] (eval-node compiled-body (assoc scope var-name {:key k :value v})))
+                (fn [item] (eval-node compiled-body (assoc scope var-name item))))
+              coll)))))
+
 (defn- compile-if [node]
   (let [compiled-if (compile* (:$if node))
-        compiled-then (compile* (:$then node))
+        compiled-then (if (:$then node)
+                        (compile* (:$then node))
+                        (compile* (dissoc node :$if)))
         compiled-else (compile* (:$else node))]
 
     (if (fn? compiled-if)
@@ -145,7 +145,8 @@ string-literal
 
 (def directives
   {:$if compile-if
-   :$let compile-let})
+   :$let compile-let
+   :$map compile-map-directive})
 
 (defn- compile-map [node]
   (let [directive-keys (cset/intersection (set (keys node)) (set (keys directives)))]
