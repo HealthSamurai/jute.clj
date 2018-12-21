@@ -2,7 +2,10 @@
  :deps {io.forward/yaml {:mvn/version"1.0.6" }
         instaparse      {:mvn/version"1.4.8"}
         criterium       {:mvn/version"0.4.4"}
-        fhirpath        {:local/root "fhirpath.clj"}}
+        ring/ring-defaults {:mvn/version "0.3.2"}
+        fhirpath        {:local/root "fhirpath.clj"}
+        cheshire        {:mvn/version "5.6.3"}
+        http-kit        {:mvn/version "2.2.0"}}
 
  :aliases
  {:nrepl
