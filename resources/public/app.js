@@ -37,11 +37,18 @@ function evaluate(){
 
 
 var example = {
-  a: 1 
+  fist_name: "$ name.given.first()",
+  last_name: "$ name.family.first()",
+  letandif: {
+    $let: [{x: 2}],
+    $body: {$if: "$ a = 1",
+            $then: 1,
+            $else: "$ b"}
+  }
 };
 
 var jute = codeMirror(document.getElementById("jute"), {
-  value: yaml.dump(example),
+  value: yaml.stringify(example, null, 2),
   lineNumbers: true,
   mode:  "yaml"
 });
@@ -65,13 +72,16 @@ jute.on('change', debounce(juteChanged, 300));
 
 var pt = {
   resourceType: "Patient",
+  a: 2,
+  b: "Hoho",
   name: [
-    {given: ["Nikolai"], family: "Ryzhikov"}
+    {use: "official", given: ["Nikolai"], family: "Ryzhikov"},
+    {user: "alias", given: ["Nik"], family: "Got"}
   ]
 };
 
 var source = codeMirror(document.getElementById("source"), {
-  value: yaml.dump(pt),
+  value: yaml.stringify(pt, null, 2),
   lineNumbers: true,
   mode:  "yaml"
 });
