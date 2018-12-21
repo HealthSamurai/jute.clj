@@ -1,0 +1,3 @@
+[submodule "fhirpath"]
+	path = fhirpath
+	url = git@github.com:niquola/fhirpath.clj.git
