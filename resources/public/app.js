@@ -37,18 +37,32 @@ function evaluate(){
 
 
 var example = {
-  fist_name: "$ name.given.first()",
-  last_name: "$ name.family.first()",
-  letandif: {
-    $let: [{x: 2}],
-    $body: {$if: "$ a = 1",
-            $then: 1,
-            $else: "$ b"}
-  }
-};
+  $let: {prefix: "Mr"},
+  $body: {
+    fist_name: "$ name.given.first()",
+    last_name: "$ name.family.first()",
+    map: {
+      $map: '$ name',
+      $as: 'x',
+      $body: {
+        name: "$ %prefix & ' ' &  %x.given.first() & ' ' & %x.family.first()"
+      }
+    },
+    sex: {
+      $if: "$ gender = 'Male'",
+      $then: 'M',
+      $else: 'F'
+    },
+    letandif: {
+      $let: [{x: 2}],
+      $body: {$if: "$ a = 1",
+              $then: 1,
+              $else: "$ b"}
+    }
+  }};
 
 var jute = codeMirror(document.getElementById("jute"), {
-  value: yaml.stringify(example, null, 2),
+  value: yaml.stringify(example, 100, 2),
   lineNumbers: true,
   mode:  "yaml"
 });
@@ -74,6 +88,7 @@ var pt = {
   resourceType: "Patient",
   a: 2,
   b: "Hoho",
+  gender: 'Male',
   name: [
     {use: "official", given: ["Nikolai"], family: "Ryzhikov"},
     {user: "alias", given: ["Nik"], family: "Got"}
