@@ -1,0 +1,53 @@
+---
+suite: $if directive
+tests:
+  - desc: evaluates into $then when condition is true
+    scope:
+      foo: 1
+    template:
+      $if: $ foo = 1
+      $then: $ foo + 1
+      $else: "else"
+    result: 2
+
+  - desc: evaluates into $else when condition is false
+    scope:
+      foo: 1
+    template:
+      $if: $ foo = 0
+      $then: "then"
+      $else: $ foo + 1
+    result: 2
+
+  - desc: evaluates into null when there is no $else
+      and condition is false
+
+    scope:
+      foo: 1
+    template:
+      $if: $ foo = 0
+      $then: "then"
+    result: null
+
+  - desc: short form evaluates into null when
+      condition is false
+
+    scope:
+      foo: 1
+    template:
+      $if: $ foo = 0
+      someKey: some value
+
+    result: null
+
+  - desc: short form evaluates into itself without $if attr when
+      condition is true
+
+    scope:
+      foo: 1
+    template:
+      $if: $ foo = 1
+      someKey: some value
+
+    result:
+      someKey: some value

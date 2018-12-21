@@ -1,0 +1,16 @@
+---
+suite: $filter directive
+tests:
+  - desc: applies one or more functions on its $body
+
+    scope:
+      names:
+        - Bob
+        - John
+        - Nick
+
+    template:
+      $filter: join(" & ")
+      $body: $ names
+
+    result: "Bob & John & Nick"
