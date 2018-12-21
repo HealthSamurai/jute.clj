@@ -3,6 +3,12 @@
 A Clojure implementation of [JUTE template
 language](https://github.com/HealthSamurai/jute.js).
 
+# REPL
+
+```
+clj -A:test:nrepl -e "(-main)" -r
+```
+
 ## License
 
 Copyright © 2017 FIXME

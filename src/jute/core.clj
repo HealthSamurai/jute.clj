@@ -1,7 +1,8 @@
 (ns jute.core
   (:refer-clojure :exclude [compile])
   (:require [clojure.set :as cset]
-            [instaparse.core :as insta]))
+            [instaparse.core :as insta]
+            [fhirpath.core :as fhirpath]))
 
 ;; operator precedence:
 ;; unary ops & not op
@@ -286,13 +287,16 @@ string-literal
     (throw (RuntimeException. (str "Cannot find compile function for node " ast)))))
 
 (defn- compile-string [node]
-  (if (.startsWith node "$")
-    (-> node
-        (expression-parser)
-        (first)
-        (compile-expression-ast))
+  (if (.startsWith node "$fp")
+    (fhirpath/compile (subs node 3))
 
-    node))
+    (if (.startsWith node "$")
+      (-> node
+          (expression-parser)
+          (first)
+          (compile-expression-ast))
+
+      node)))
 
 (defn compile* [node]
   (cond
