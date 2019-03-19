@@ -70,7 +70,7 @@ path
   | '@' (<'.'> path-component)*
 
 <path-head>
-  = #'[a-zA-Z_]+'
+  = #'[a-zA-Z_][a-zA-Z_0-9]+'
 
 <path-component>
   = #'[a-zA-Z_0-9]+'
