@@ -215,6 +215,7 @@ string-literal
 
 (def standard-fns
   {:join str/join
+   :substring subs
    :println println})
 
 (defn- compile-expr-expr [ast]
@@ -331,9 +332,9 @@ string-literal
 
 (defn compile* [node]
   (cond
-    (map? node) (compile-map node)
-    (vector? node) (compile-vector node)
-    (string? node) (compile-string node)
+    (map? node)     (compile-map node)
+    (string? node)  (compile-string node)
+    (seqable? node) (compile-vector node)
     :else node))
 
 (defn compile
