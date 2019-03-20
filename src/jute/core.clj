@@ -70,7 +70,7 @@ path
   | '@' (<'.'> path-component)*
 
 <path-head>
-  = #'[a-zA-Z_][a-zA-Z_0-9]+'
+  = #'[a-zA-Z_][a-zA-Z_0-9]*'
 
 <path-component>
   = #'[a-zA-Z_0-9]+'
@@ -318,6 +318,11 @@ string-literal
     (compile-fn ast)
     (throw (RuntimeException. (str "Cannot find compile function for node " ast)))))
 
+(defn failure? [x]
+  (if (insta/failure? x)
+    (throw (RuntimeException. (pr-str (insta/get-failure x))))
+    x))
+
 (defn- compile-string [node]
   (if (.startsWith node "$fp")
     (fhirpath/compile (subs node 3))
@@ -325,6 +330,7 @@ string-literal
     (if (.startsWith node "$")
       (-> node
           (expression-parser)
+          failure?
           (first)
           (compile-expression-ast))
 

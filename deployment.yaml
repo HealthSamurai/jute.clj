@@ -35,7 +35,7 @@ spec:
     spec:
       containers:
       - name: jute
-        image: "healthsamurai/jute-clj-demo:4e760ff"
+        image: "healthsamurai/jute-clj-demo:e5868be"
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
