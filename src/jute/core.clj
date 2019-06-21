@@ -281,12 +281,14 @@ string-literal
   v)
 
 (defn- compile-path-component [cmp]
-  (cond
-    (string? cmp) (keyword cmp)
-    (vector? cmp)
-    (let [[t arg] cmp]
-      (cond
-        (= :wildcard t) (fn [scope])))))
+  (let [[literal value] (take-last 2 (flatten (expression-parser cmp)))]
+    (cond
+      (= :num-literal literal) (read-string value)
+      (string? cmp) (keyword cmp)
+      (vector? cmp)
+      (let [[t arg] cmp]
+        (cond
+          (= :wildcard t) (fn [scope]))))))
 
 (defn- compile-path [[_ & path-comps]]
   (let [compiled-comps (mapv compile-path-component path-comps)]
