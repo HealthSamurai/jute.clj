@@ -216,6 +216,7 @@ string-literal
 (def standard-fns
   {:join str/join
    :substring subs
+   :str (fn [v] (if (keyword? v) (name v) (str v)))
    :println println})
 
 (defn- compile-expr-expr [ast]
@@ -338,6 +339,7 @@ string-literal
 
 (defn compile* [node]
   (cond
+    (nil? node)     nil
     (map? node)     (compile-map node)
     (string? node)  (compile-string node)
     (seqable? node) (compile-vector node)

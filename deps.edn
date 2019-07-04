@@ -1,5 +1,6 @@
 {:paths ["src" "resources"  ]
- :deps {io.forward/yaml {:mvn/version"1.0.6" }
+ :deps {io.forward/yaml {:mvn/version "1.0.9" :exclusions [org.flatland/ordered]}
+        org.flatland/ordered {:mvn/version "1.5.7"}
         org.clojure/clojure  {:mvn/version "1.10.0"}
         instaparse      {:mvn/version"1.4.8"}
         org.antlr/antlr4-runtime {:mvn/version "4.7.2"}

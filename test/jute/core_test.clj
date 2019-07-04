@@ -21,7 +21,7 @@
   (let [suite (yaml/from-file "spec/if_directive.yml" true)]
     (doseq [{:keys [desc scope template result]} (:tests suite)]
       (testing desc
-        (is (= ((compile template) scope) result))))))
+        (is (= result ((compile template) scope)))))))
 
 (deftest let-directive-test
   (let [suite (yaml/from-file "spec/let_directive.yml" true)]
@@ -40,5 +40,3 @@
     (doseq [{:keys [desc scope template result]} (:tests suite)]
       (testing desc
         (is (= ((compile template) scope) result))))))
-
-(run-tests)

@@ -21,7 +21,6 @@ tests:
       - "hello, Nick"
 
   - desc: works for objects too
-
     scope:
       items:
         names:
@@ -36,7 +35,7 @@ tests:
       $map: $ items
       $as: i
       $body:
-        - $ i.key
+        - $ str(i.key)
         - $ i.value
 
     result:

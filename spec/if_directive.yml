@@ -42,7 +42,6 @@ tests:
 
   - desc: short form evaluates into itself without $if attr when
       condition is true
-
     scope:
       foo: 1
     template:
@@ -51,3 +50,58 @@ tests:
 
     result:
       someKey: some value
+
+  - desc: boolean expressions are evaluated properly
+    scope:
+      flag: "True"
+    template:
+      $if: $ flag = "True"
+      $then: 42
+      $else: 43
+    result: 42
+
+  - desc: boolean expressions are evaluated properly
+    scope:
+      flag: true
+    template:
+      $if: $ flag = true
+      $then: 42
+      $else: 43
+    result: 42
+
+  - desc: boolean expressions are evaluated properly
+    scope:
+      flag: true
+    template: $ flag = true
+    result: true
+
+  - desc: boolean expressions are evaluated properly
+    scope:
+      flag: true
+    template: $ flag = "True"
+    result: false
+
+  - desc: boolean expressions are evaluated properly
+    scope:
+      Inactive_Flag: true
+    template:
+      body:
+        entry:
+          - request:
+              url: /MyResource
+              method: POST
+            resource:
+              resourceType: MyResource
+              payload:
+                active: $ Inactive_Flag = "True"
+    result:
+      body:
+        entry:
+          - request:
+              url: /MyResource
+              method: POST
+            resource:
+              resourceType: MyResource
+              payload:
+                active: false
+
