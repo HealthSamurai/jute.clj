@@ -1,3 +1,0 @@
-[submodule "fhirpath.clj"]
-	path = fhirpath.clj
-	url = https://github.com/niquola/fhirpath.clj
