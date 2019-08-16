@@ -3,6 +3,8 @@
 A Clojure implementation of [JUTE template
 language](https://github.com/HealthSamurai/jute.js).
 
+[![Build Status](https://travis-ci.org/HealthSamurai/jute.clj.svg?branch=master)](https://travis-ci.org/HealthSamurai/jute.clj)
+
 # REPL
 
 ```
