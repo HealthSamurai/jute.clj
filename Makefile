@@ -1,3 +1,3 @@
 .PHONY: test
 test:
-	clj -A:test:runner
+	clojure -A:test:runner
