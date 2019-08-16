@@ -94,10 +94,10 @@ fn-call
 path
   = path-head (<'.'> path-component)*
   | parens-expr (<'.'> path-component)+
-  | '@' (<'.'> path-component)*
 
 <path-head>
   = #'[a-zA-Z_][a-zA-Z_0-9]*'
+  | '@'
 
 <path-component>
   = #'[a-zA-Z_0-9]+'
@@ -325,6 +325,13 @@ string-literal
 (defn- compile-string-literal [[_ v]]
   v)
 
+(defn- expand-wildcard [v]
+  (if (sequential? v)
+    v
+    (if (map? v)
+      (vals v)
+      nil)))
+
 (defn- compile-path-component [cmp]
   (cond
     (string? cmp) (if (re-matches #"^\d+$" cmp)
@@ -335,28 +342,36 @@ string-literal
     (vector? cmp)
     (let [[t arg] cmp]
       (cond
-        (= :path-wildcard t) (fn [scope] (if (sequential? scope) scope [scope]))
+        (= :path-wildcard t) (fn [val scope is-multiple?]
+                               (if is-multiple?
+                                 (remove nil? (mapcat expand-wildcard val))
+                                 (expand-wildcard val)))
+
         (= :path-predicate t) (let [compiled-pred (compile-expression-ast arg)]
-                                (fn [scope] (vec (filter compiled-pred scope))))))))
+                                (fn [val scope is-multiple?]
+                                  (vec (filter #(compiled-pred (assoc scope :this %)) val))))))))
 
 (defn- compile-path [[_ & path-comps]]
-  (let [compiled-comps (mapv compile-path-component path-comps)]
+  (let [compiled-comps (mapv compile-path-component path-comps)
+        path-root (keyword "@")]
     (fn [scope]
       (loop [[cmp & tail] compiled-comps
-             scope scope
+             val scope
              is-multiple? false]
-        (let [next-scope (if (fn? cmp)
-                           (if is-multiple?
-                             (mapv cmp scope)
-                             (cmp scope))
+        (let [next-val
+              (if (= path-root cmp)
+                val
 
-                           (if is-multiple?
-                             (mapv #(get % cmp) scope)
-                             (get scope cmp)))]
+                (if (fn? cmp)
+                  (cmp val scope is-multiple?)
+
+                  (if is-multiple?
+                    (remove nil? (map #(get % cmp) val))
+                    (get val cmp))))]
 
           (if (empty? tail)
-            next-scope
-            (recur tail next-scope (or is-multiple? (fn? cmp)))))))))
+            next-val
+            (recur tail next-val (or is-multiple? (fn? cmp)))))))))
 
 (def expressions-compile-fns
   {:expr compile-expr-expr
@@ -432,10 +447,9 @@ string-literal
                 (if (empty? nn) nil nn))
 
               (sequential? n)
-              (let [nn (filter (complement nil?) (map drop-blanks n))]
+              (let [nn (remove nil? (map drop-blanks n))]
                 (if (empty? nn) nil nn))
 
               :else n)]
 
     res))
-

@@ -1,0 +1,315 @@
+---
+suite: Expressions
+tests:
+  - desc: path with wildcard returns array of values
+    scope: &goessner
+      someVar: "fiction"
+      otherVar: 3
+      thirdVar: "book"
+      store:
+        "key with spaces": 42
+        book:
+          - category: "reference"
+            author: "Nigel Rees"
+            title: "Sayings of the Century"
+            price: 8.95
+
+          - category: "fiction"
+            author: "Evelyn Waugh"
+            title: "Sword of Honour"
+            price: 12.99
+
+          - category: "fiction"
+            author: "Herman Melville"
+            title: "Moby Dick"
+            isbn: "0-553-21311-3"
+            price: 8.99
+
+          - category: "fiction"
+            author: "J. R. R. Tolkien"
+            title: "The Lord of the Rings"
+            isbn: "0-395-19395-8"
+            price: 22.99
+
+        bicycle:
+          color: "red"
+          price: 19.95
+
+        flower:
+          - name: "Roses"
+            color: "white"
+            price: 1.3
+
+      expensive: 10
+    template:
+      authors: $ store.book.*.author
+    result:
+      authors:
+        - Nigel Rees
+        - Evelyn Waugh
+        - Herman Melville
+        - J. R. R. Tolkien
+
+  - desc: path without wildcard returns single value
+    scope:
+      <<: *goessner
+    template:
+      author: $ store.book.1.author
+    result:
+      author: "Evelyn Waugh"
+
+  - desc: path allow to get single array element
+    scope:
+      <<: *goessner
+    template:
+      first: $ store.book.0
+      second: $ store.book.1
+    result:
+      first:
+        category: "reference"
+        author: "Nigel Rees"
+        title: "Sayings of the Century"
+        price: 8.95
+
+      second:
+        category: "fiction"
+        author: "Evelyn Waugh"
+        title: "Sword of Honour"
+        price: 12.99
+
+  # - desc: path allow string literals as path components
+  #   scope:
+  #     <<: *goessner
+  #   template:
+  #     first: $ store."key with spaces"
+  #   result:
+  #     first: 42
+
+  # - desc: path allow negative array indices
+  #   scope:
+  #     <<: *goessner
+  #   template:
+  #     first: $ store.book.-1
+  #     second: $ store.book.-2
+  #   result:
+  #     first:
+  #       category: "fiction"
+  #       author: "J. R. R. Tolkien"
+  #       title: "The Lord of the Rings"
+  #       isbn: "0-395-19395-8"
+  #       price: 22.99
+
+  #     second:
+  #       category: "fiction"
+  #       author: "Herman Melville"
+  #       title: "Moby Dick"
+  #       isbn: "0-553-21311-3"
+  #       price: 8.99
+
+
+  # - desc: path with deep wildcards collects all values regardless its level
+  #   scope:
+  #     <<: *goessner
+  #   template:
+  #     prices: $ store.**.price
+  #   result:
+  #     prices:
+  #       - 8.95
+  #       - 12.99
+  #       - 8.99
+  #       - 22.99
+  #       - 19.95
+  #       - 1.3
+
+  - desc: path with multiple wildcards returns array of values
+    scope:
+      <<: *goessner
+    template:
+      prices: $ store.book.*.price
+    result:
+      prices:
+        - 8.95
+        - 12.99
+        - 8.99
+        - 22.99
+
+  - desc: wildcards works for arrays
+    scope:
+      <<: *goessner
+    template:
+      prices: $ store.*.*.price
+    result:
+      prices:
+        - 8.95
+        - 12.99
+        - 8.99
+        - 22.99
+        - 1.3
+
+  - desc: path with predicate select values which satisfies expression
+    scope:
+      <<: *goessner
+    template:
+      foo: $ someVar
+      cheap_books: $ store.book.*(this.price < 10).title
+      reference_book: $ store.book.*(this.category = "reference").title
+      fiction_books: $ store.book.*(this.category = someVar).title
+    result:
+      foo: 'fiction'
+      reference_book:
+        - "Sayings of the Century"
+
+      cheap_books:
+        - "Sayings of the Century"
+        - "Moby Dick"
+
+      fiction_books:
+        - "Sword of Honour"
+        - "Moby Dick"
+        - "The Lord of the Rings"
+
+  - desc: path with wildcards collects all available elements
+    scope: {"a": 3, "b": 5, "c": [true, false]}
+    template:
+      a: $ @.*
+      b: $ c.*
+    result:
+      a: [3, 5, [true, false]]
+      b: [true, false]
+
+  - desc: path can contain single element
+    scope:
+      foo: 12
+    template:
+      bar: $ foo
+    result:
+      bar: 12
+
+  - desc: plus adds numbers
+    scope:
+    template:
+      bar: $ 2 + 6 - 10
+    result:
+      bar: -2
+
+  - desc: drastically complex algebraic expression
+    scope:
+    template:
+      ex1: $ 2 + 3 * 3
+      ex2: $ 2 + 3 / 3
+    result:
+      ex1: 11
+      ex2: 3
+
+  - desc: negation negates number
+    scope:
+    template:
+      bar: $ -10
+    result:
+      bar: -10
+
+  # - desc: union operator performs union operation on it\'s operands
+  #   scope:
+  #     <<: *goessner
+  #     a: [10, true, {foo: {bar: "a"}}]
+  #     b: [20, "hello!", {foo: {bar: "a"}}]
+  #   template:
+  #     bar: $ a | b
+  #     baz: $ store.book.*.price | store.flower.*.price
+  #   result:
+  #     bar:
+  #       - 10
+  #       - true
+  #       - {foo: {bar: "a"}}
+  #       - 20
+  #       - "hello!"
+  #     baz:
+  #       - 8.95
+  #       - 12.99
+  #       - 8.99
+  #       - 22.99
+  #       - 1.3
+
+  # - desc: path expressions change path scope
+  #   scope:
+  #     <<: *goessner
+  #   template:
+  #     bar: $ store.(this.book | this.flower).*.price
+  #   result:
+  #     bar:
+  #       - 8.95
+  #       - 12.99
+  #       - 8.99
+  #       - 22.99
+  #       - 1.3
+
+  # - desc: path expressions allow expressions as path elements
+  #   scope:
+  #     <<: *goessner
+  #   template:
+  #     first: $ store.book.(otherVar)
+  #     second: $ store.(thirdVar).0
+  #   result:
+  #     first:
+  #       category: "fiction"
+  #       author: "J. R. R. Tolkien"
+  #       title: "The Lord of the Rings"
+  #       isbn: "0-395-19395-8"
+  #       price: 22.99
+
+  #     second:
+  #       category: "reference"
+  #       author: "Nigel Rees"
+  #       title: "Sayings of the Century"
+  #       price: 8.95
+
+  # - desc: boolean logic expressions are evaluated properly
+  #   scope:
+  #     foo: 2
+  #     bar: 3
+  #     baz: false
+  #   template:
+  #     ex1: $ foo && bar = 3
+  #     ex2: $ baz || foo && bar != 6
+  #   result:
+  #     ex1: true
+  #     ex2: true
+
+  # - desc: sortBy helper sorts stuff
+  #   scope:
+  #     items:
+  #       - {foo: 5}
+  #       - {foo: 2}
+  #       - {foo: 8}
+  #       - {foo: 1}
+  #       - {foo: 1}
+
+  #   template:
+  #     ex1: $ items |> sortBy('foo')
+  #   result:
+  #     ex1:
+  #       - {foo: 1}
+  #       - {foo: 1}
+  #       - {foo: 2}
+  #       - {foo: 5}
+  #       - {foo: 8}
+
+  # - desc: groupBy helper groups stuff
+  #   scope:
+  #     items:
+  #       - {foo: 5, bar: "a"}
+  #       - {foo: 2, bar: "a"}
+  #       - {foo: 8, bar: "b"}
+  #       - {foo: 1, bar: "b"}
+  #       - {foo: 1}
+
+  #   template:
+  #     ex1: $ items |> sortBy('foo') |> groupBy('bar')
+  #   result:
+  #     ex1:
+  #       a:
+  #         - {foo: 2, bar: "a"}
+  #         - {foo: 5, bar: "a"}
+  #       b:
+  #         - {foo: 1, bar: "b"}
+  #         - {foo: 8, bar: "b"}
