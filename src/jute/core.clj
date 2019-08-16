@@ -3,7 +3,34 @@
   (:require [clojure.set :as cset]
             [instaparse.core :as insta]
             [clojure.string :as str]
-            [fhirpath.core :as fhirpath]))
+            #_[fhirpath.core :as fhirpath]))
+
+(def standard-fns
+  {:join str/join
+   :substring subs
+   :concat concat
+   :merge merge
+   :str (fn [v] (if (keyword? v) (name v) (str v)))
+   :hash hash
+   :toInt (fn [v] (if (string? v)
+                    (try
+                      #?(:clj (java.lang.Long/parseLong v)
+                         :cljs (js/parseInt v))
+                      (catch #?(:clj Exception :cljs js/Object) e 0))
+                    v))
+
+   :toDecimal (fn [v] (if (string? v)
+                        (try
+                          #?(:clj (Float/parseFloat v)
+                             :cljs (js/parseFloat v))
+                          (catch #?(:clj Exception :cljs js/Object) e 0.0))
+                        v))
+
+   :now (fn [] #?(:clj (new java.util.Date)
+                  :cljs (new js/Date)))
+   :groupBy group-by
+   :len count
+   :println println})
 
 ;; operator precedence:
 ;; unary ops & not op
@@ -106,10 +133,10 @@ string-literal
 (defn- eval-node [n scope]
   (if (fn? n) (n scope) n))
 
-(defn- compile-map-directive [node]
-  (let [compiled-map (compile* (:$map node))
+(defn- compile-map-directive [node options]
+  (let [compiled-map (compile* (:$map node) options)
         var-name (keyword (:$as node))
-        compiled-body (compile* (:$body node))]
+        compiled-body (compile* (:$body node) options)]
 
     (fn [scope]
       (let [coll (eval-node compiled-map scope)]
@@ -118,12 +145,12 @@ string-literal
                 (fn [item] (eval-node compiled-body (assoc scope var-name item))))
               coll)))))
 
-(defn- compile-if [node]
-  (let [compiled-if (compile* (:$if node))
-        compiled-then (if (:$then node)
-                        (compile* (:$then node))
-                        (compile* (dissoc node :$if)))
-        compiled-else (compile* (:$else node))]
+(defn- compile-if [node options]
+  (let [compiled-if (compile* (:$if node) options)
+        compiled-then (if (contains? node :$then)
+                        (compile* (:$then node) options)
+                        (compile* (dissoc node :$if :$else) options))
+        compiled-else (compile* (:$else node) options)]
 
     (if (fn? compiled-if)
       (fn [scope]
@@ -132,17 +159,17 @@ string-literal
           (eval-node compiled-else scope)))
 
       (if compiled-if
-        compiled-then
-        compiled-else))))
+        (fn [scope] (eval-node compiled-then scope))
+        (fn [scope] (eval-node compiled-else scope))))))
 
-(defn- compile-let [node]
+(defn- compile-let [node options]
   (let [lets (:$let node)
-        compiled-locals (mapv (fn [[k v]] [k (compile* v)])
+        compiled-locals (mapv (fn [[k v]] [k (compile* v options)])
                               (if (vector? lets)
                                 (mapv (fn [i] [(first (keys i)) (first (vals i))]) lets)
                                 (mapv (fn [[k v]] [k v]) lets)))
 
-        compiled-body (compile* (:$body node))]
+        compiled-body (compile* (:$body node) options)]
 
     (fn [scope]
       (let [new-scope (reduce (fn [acc [n v]]
@@ -150,32 +177,51 @@ string-literal
                               scope compiled-locals)]
         (eval-node compiled-body new-scope)))))
 
-(defn- compile-fn-directive [node]
+(defn- compile-fn-directive [node options]
   (let [arg-names (map keyword (:$fn node))
-        compiled-body (compile* (:$body node))]
+        compiled-body (compile* (:$body node) options)]
 
     (fn [scope]
       (fn [& args]
         (let [new-scope (merge scope (zipmap arg-names args))]
           (eval-node compiled-body new-scope))))))
 
+(defn- compile-call-directive [node options]
+  (let [fn-name (keyword (:$call node))
+        args (map #(compile* % options) (:$args node))]
+
+    (fn [scope]
+      (if-let [fun (or (and (fn? (get scope fn-name)) (get scope fn-name))
+                       (get standard-fns (keyword fn-name)))]
+        (let [arg-values (mapv #(eval-node % scope) args)]
+          (apply fun arg-values))
+
+        (let [err (str "Cannot find function " fn-name " in the current scope")]
+          (throw #?(:clj (IllegalArgumentException. err)
+                    :cljs (js/Error. err))))))))
+
 (def directives
   {:$if compile-if
    :$let compile-let
    :$map compile-map-directive
+   :$call compile-call-directive
    :$fn compile-fn-directive})
 
-(defn- compile-map [node]
-  (let [directive-keys (cset/intersection (set (keys node)) (set (keys directives)))]
+(defn- compile-map [node options]
+  (let [directives (merge directives (:directives options))
+        directive-keys (cset/intersection (set (keys node))
+                                          (set (keys directives)))]
     (when (> (count directive-keys) 1)
-      (throw (IllegalArgumentException. (str "More than one directive found in node "
-                                             (pr-str node)
-                                             ". Found following directive keys: "
-                                             (pr-str directive-keys)))))
+      (let [err (str "More than one directive found in the node "
+                     (pr-str node)
+                     ". Found following directive keys: "
+                     (pr-str directive-keys))]
+        (throw #?(:clj (IllegalArgumentException. err)
+                  :cljs (js/Error. err)))))
 
     (if (empty? directive-keys)
       (let [result (reduce (fn [acc [key val]]
-                             (let [compiled-val (compile* val)]
+                             (let [compiled-val (compile* val options)]
                                (-> acc
                                    (assoc-in [:result key] compiled-val)
                                    (assoc :dynamic? (or (:dynamic? acc) (fn? compiled-val))))))
@@ -188,10 +234,10 @@ string-literal
 
           (:result result)))
 
-      ((get directives (first directive-keys)) node))))
+      ((get directives (first directive-keys)) node options))))
 
-(defn- compile-vector [node]
-  (let [result (mapv compile* node)]
+(defn- compile-vector [node options]
+  (let [result (mapv #(compile* % options) node)]
     (if (some fn? result)
       (fn [scope]
         (mapv #(eval-node % scope) result))
@@ -205,6 +251,7 @@ string-literal
    "%" clojure.core/rem
    "=" clojure.core/=
    "!=" clojure.core/not=
+   "!" clojure.core/not
    ">" clojure.core/>
    "<" clojure.core/<
    ">=" clojure.core/>=
@@ -212,12 +259,6 @@ string-literal
    "/" clojure.core//})
 
 (declare compile-expression-ast)
-
-(def standard-fns
-  {:join str/join
-   :substring subs
-   :str (fn [v] (if (keyword? v) (name v) (str v)))
-   :println println})
 
 (defn- compile-expr-expr [ast]
   (compile-expression-ast (second ast)))
@@ -232,7 +273,9 @@ string-literal
           (fn [scope] (f (eval-node compiled-left scope) (eval-node compiled-right scope)))
           (f compiled-left compiled-right)))
 
-      (throw (RuntimeException. (str "Cannot guess operator for: " op))))
+      (let [err (str "Cannot guess operator for: " op)]
+        (throw #?(:clj (RuntimeException. err)
+                  :cljs (js/Error. err)))))
 
     (compile-expression-ast left)))
 
@@ -273,7 +316,8 @@ string-literal
       (fn [scope] (f (eval-node operand scope))))))
 
 (defn- compile-num-literal [ast]
-  (read-string (apply str (rest ast))))
+  #?(:clj (read-string (apply str (rest ast)))
+     :cljs (js/parseFloat (apply str (rest ast)))))
 
 (defn- compile-bool-literal [[_ v]]
   (= v "true"))
@@ -283,21 +327,36 @@ string-literal
 
 (defn- compile-path-component [cmp]
   (cond
-    (string? cmp) (keyword cmp)
+    (string? cmp) (if (re-matches #"^\d+$" cmp)
+                    #?(:clj (read-string cmp)
+                       :cljs (js/parseInt cmp))
+
+                    (keyword cmp))
     (vector? cmp)
     (let [[t arg] cmp]
       (cond
-        (= :wildcard t) (fn [scope])))))
+        (= :path-wildcard t) (fn [scope] (if (sequential? scope) scope [scope]))
+        (= :path-predicate t) (let [compiled-pred (compile-expression-ast arg)]
+                                (fn [scope] (vec (filter compiled-pred scope))))))))
 
 (defn- compile-path [[_ & path-comps]]
   (let [compiled-comps (mapv compile-path-component path-comps)]
     (fn [scope]
       (loop [[cmp & tail] compiled-comps
-             scope scope]
-        (let [next-scope (if (fn? cmp) (cmp scope) (get scope cmp))]
+             scope scope
+             is-multiple? false]
+        (let [next-scope (if (fn? cmp)
+                           (if is-multiple?
+                             (mapv cmp scope)
+                             (cmp scope))
+
+                           (if is-multiple?
+                             (mapv #(get % cmp) scope)
+                             (get scope cmp)))]
+
           (if (empty? tail)
             next-scope
-            (recur tail next-scope)))))))
+            (recur tail next-scope (or is-multiple? (fn? cmp)))))))))
 
 (def expressions-compile-fns
   {:expr compile-expr-expr
@@ -317,16 +376,22 @@ string-literal
 (defn- compile-expression-ast [ast]
   (if-let [compile-fn (get expressions-compile-fns (first ast))]
     (compile-fn ast)
-    (throw (RuntimeException. (str "Cannot find compile function for node " ast)))))
+    (let [err (str "Cannot find compile function for node " ast)]
+      (throw #?(:clj (RuntimeException. err)
+                :cljs (js/Error. err))))))
 
 (defn failure? [x]
   (if (insta/failure? x)
-    (throw (RuntimeException. (pr-str (insta/get-failure x))))
+    (let [err (pr-str (insta/get-failure x))]
+      (throw #?(:clj (RuntimeException. err)
+                :cljs (js/Error. err))))
     x))
 
-(defn- compile-string [node]
+(defn- compile-string [node options]
   (if (.startsWith node "$fp")
-    (fhirpath/compile (subs node 3))
+    ;; (fhirpath/compile (subs node 3))
+    (throw #?(:clj (RuntimeException. "Fhirpath expressions are not supported yet")
+              :cljs (js/Error. "Fhirpath expressions are not supported yet")))
 
     (if (.startsWith node "$")
       (-> node
@@ -337,19 +402,40 @@ string-literal
 
       node)))
 
-(defn compile* [node]
+(defn compile* [node options]
   (cond
     (nil? node)     nil
-    (map? node)     (compile-map node)
-    (string? node)  (compile-string node)
-    (seqable? node) (compile-vector node)
+    (map? node)     (compile-map node options)
+    (string? node)  (compile-string node options)
+    (seqable? node) (compile-vector node options)
     :else node))
 
 (defn compile
   "Compiles JUTE template into invocabe function."
-  [node]
+  [node & [options]]
 
-  (let [result (compile* node)]
+  (let [result (compile* node (or options {}))]
     (if (fn? result)
       result
       (constantly result))))
+
+(defn drop-blanks [n]
+  (let [res (cond
+              (and (string? n) (str/blank? n)) nil
+              (map? n)
+              (let [nn (reduce (fn [acc [k v]]
+                                 (let [nv (drop-blanks v)]
+                                   (if (nil? nv)
+                                     acc
+                                     (assoc acc k nv))))
+                               {} n)]
+                (if (empty? nn) nil nn))
+
+              (sequential? n)
+              (let [nn (filter (complement nil?) (map drop-blanks n))]
+                (if (empty? nn) nil nn))
+
+              :else n)]
+
+    res))
+

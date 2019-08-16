@@ -40,3 +40,4 @@
     (doseq [{:keys [desc scope template result]} (:tests suite)]
       (testing desc
         (is (= ((compile template) scope) result))))))
+
