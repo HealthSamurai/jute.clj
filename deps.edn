@@ -1,14 +1,8 @@
 {:paths ["src" "resources"  ]
- :deps {io.forward/yaml {:mvn/version "1.0.9" :exclusions [org.flatland/ordered]}
+ :deps {io.forward/yaml      {:mvn/version "1.0.9" :exclusions [org.flatland/ordered]}
         org.flatland/ordered {:mvn/version "1.5.7"}
         org.clojure/clojure  {:mvn/version "1.10.0"}
-        instaparse      {:mvn/version"1.4.8"}
-        org.antlr/antlr4-runtime {:mvn/version "4.7.2"}
-        criterium       {:mvn/version"0.4.4"}
-        ring/ring-defaults {:mvn/version "0.3.2"}
-        fhirpath        {:local/root "fhirpath.clj"}
-        cheshire        {:mvn/version "5.6.3"}
-        http-kit        {:mvn/version "2.2.0"}}
+        instaparse           {:mvn/version"1.4.8"}}
 
  :aliases
  {:nrepl
@@ -18,20 +12,11 @@
     org.clojure/tools.nrepl       {:mvn/version "0.2.13"}
     cider/cider-nrepl             {:mvn/version "0.19.0-SNAPSHOT"}
     refactor-nrepl/refactor-nrepl {:mvn/version "2.4.0-SNAPSHOT"}}
-   :jvm-opts ^:replace ["-XX:-OmitStackTraceInFastThrow"]
    :extra-paths ["dev"]}
 
   :test {:extra-paths ["test"]}
 
-  :uberjar
-  {:extra-deps {xfthhxk/cambada {:git/url "https://github.com/xfthhxk/cambada.git"
-                                 :sha     "8fdc7d29a41620ad3e9e6210fd7140f3a4c7936b"}}
-
-   :extra-paths ["resources"]
-   :jvm-opts ^:replace ["-XX:-OmitStackTraceInFastThrow"]
-   :main-opts  ["-m" "cambada.uberjar"
-                "-a" "all"
-                "--app-artifact-id" "jute-demo"
-                "--app-version" "1.0.0"
-                "-m" "jute.server"]}
-  }}
+  :runner {:extra-deps {com.cognitect/test-runner
+                        {:git/url "https://github.com/cognitect-labs/test-runner"
+                         :sha "3cb0a9daf1cb746259dc8309b218f9211ad3b33b"}}
+           :main-opts ["-m" "runner"]}}}
