@@ -44,3 +44,32 @@
       (testing desc
         (is (= ((compile template) scope) result))))))
 
+
+(deftest documentation-examples-test
+  (testing "An example from README.md"
+    (let [template {:type "book"
+                    :author "$ book.author.name"
+                    :title "$ book.title"
+                    :content {:$map "$ book.chapters.*(this.type = \"content\")"
+                              :$as "ch"
+                              :$body "$ ch.content"}}
+
+          scope {:book {:author {:name "M. Soloviev"
+                                 :title "PHD"}
+                        :title "Approach to Cockroach"
+                        :chapters [{:type "preface"
+                                    :content "A preface chapter"}
+                                   {:type "content"
+                                    :content "Chapter 1"}
+                                   {:type "content"
+                                    :content "Chapter 2"}
+                                   {:type "content"
+                                    :content "Chapter 3"}
+                                   {:type "afterwords"
+                                    :content "Afterwords"}]}}]
+
+      (is (= ((compile template) scope)
+             {:type "book"
+              :author "M. Soloviev"
+              :title "Approach to Cockroach"
+              :content ["Chapter 1" "Chapter 2" "Chapter 3"]})))))
