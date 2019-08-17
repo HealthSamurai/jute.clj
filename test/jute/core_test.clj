@@ -46,7 +46,7 @@
 
 
 (deftest documentation-examples-test
-  (testing "An example from README.md"
+  (testing "The first example from README.md"
     (let [template {:type "book"
                     :author "$ book.author.name"
                     :title "$ book.title"
@@ -55,7 +55,8 @@
                               :$body "$ ch.content"}}
 
           scope {:book {:author {:name "M. Soloviev"
-                                 :title "PHD"}
+                                 :title "PHD"
+                                 :gender "m"}
                         :title "Approach to Cockroach"
                         :chapters [{:type "preface"
                                     :content "A preface chapter"}
