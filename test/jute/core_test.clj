@@ -51,7 +51,8 @@
                     :title "$ book.title"
                     :content {:$map "$ book.chapters.*(this.type = \"content\")"
                               :$as "ch"
-                              :$body "$ ch.content"}}
+                              :$body "$ ch.content"}
+                    :content2 "$ book.chapters.*(this.type = \"content\").content"}
 
           scope {:book {:author {:name "M. Soloviev"
                                  :title "PHD"
@@ -72,4 +73,5 @@
              {:type "book"
               :author "M. Soloviev"
               :title "Approach to Cockroach"
-              :content ["Chapter 1" "Chapter 2" "Chapter 3"]})))))
+              :content ["Chapter 1" "Chapter 2" "Chapter 3"]
+              :content2 ["Chapter 1" "Chapter 2" "Chapter 3"]})))))

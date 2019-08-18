@@ -80,13 +80,36 @@ either in a object keys or as the first character of a string. Numbers
 and boolean values (`true`/`false`) are always constants in JUTE
 templates.
 
-Let's move to the `author` field. Obviously we're gonna use the
-incoming data to get an author's name from it:
+Let's move to the `author` field. Obviously we're gonna take an
+author's name from an incoming data:
 
 ```yml
 type: "book"
 author: "$ book.author.name"
 ```
+
+To tell JUTE that an `author` field will be dynamic we put a dollar
+sign at the beginning of a value's string. The rest of the string is a
+path for the data we need. Such strings starting with a dollar signs
+are called JUTE expressions and they have pretty rich syntax to
+describe various operations on an incoming data.
+
+Please note that it's ok to omit double-quotes (`""`) for strings in
+YAML, so instead of writing `"$ foo.bar"` we can just write `$
+foo.bar`.
+
+So we can fill the `title` field using similar expression and omit
+double-quotes as well:
+
+```yml
+type: book
+author: $ book.author.name
+title: $ book.title
+```
+
+Let's proceed to the `content` part. There are two tasks we need to
+perform: filter out all chapters where `chapter.type != "content"` and
+take an `chapter` attribute of every filtered chapter.
 
 ## License
 
