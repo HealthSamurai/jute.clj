@@ -105,16 +105,18 @@ double-quotes for readability:
 
 <table>
 <thead>
-<tr><td>Template</td><td>Result</td></tr>
+<tr><th>Template</th><th>Result</th></tr>
 </thead>
 <tbody>
 <tr><td>
+
 ```yml
 type: book
 author: $ book.author.name
 title: $ book.title
 ```
 </td><td>
+
 ```yml
 type: book
 author: M. Soloviev
