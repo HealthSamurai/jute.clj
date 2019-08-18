@@ -12,7 +12,9 @@ language](https://github.com/HealthSamurai/jute.js).
 JUTE stands for JSON Uniform Templates and it's a small language to
 describe JSON documents transformations. JUTE templates are JSON
 documents itself. It's safe to evaluate user-provided JUTE templates,
-there is no way for a template to currupt a runtime environment.
+there is no way for a template to currupt a runtime environment [if
+you use a safe YAML
+parser](https://arp242.net/yaml-config.html#insecure-by-default).
 
 ## Few words about YAML
 
@@ -99,7 +101,7 @@ YAML, so instead of writing `"$ foo.bar"` we can just write `$
 foo.bar`.
 
 So we can fill the `title` field using similar expression and omit
-double-quotes as well:
+double-quotes for readability:
 
 ```yml
 type: book
