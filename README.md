@@ -103,11 +103,26 @@ foo.bar`.
 So we can fill the `title` field using similar expression and omit
 double-quotes for readability:
 
+<table>
+<thead>
+<tr><td>Template</td><td>Result</td></tr>
+</thead>
+<tbody>
+<tr><td>
 ```yml
 type: book
 author: $ book.author.name
 title: $ book.title
 ```
+</td><td>
+```yml
+type: book
+author: M. Soloviev
+title: Approach to Cockroach
+```
+</td></tr>
+</tbody>
+</table>
 
 Let's proceed to the `content` part. There are two tasks we need to
 perform: filter out all chapters where `chapter.type != "content"` and
