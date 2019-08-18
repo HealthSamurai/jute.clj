@@ -342,14 +342,25 @@ string-literal
     (vector? cmp)
     (let [[t arg] cmp]
       (cond
-        (= :path-wildcard t) (fn [val scope is-multiple?]
-                               (if is-multiple?
-                                 (remove nil? (mapcat expand-wildcard val))
-                                 (expand-wildcard val)))
+        (= :path-wildcard t) [(fn [val scope is-multiple?]
+                                (if is-multiple?
+                                  (remove nil? (mapcat expand-wildcard val))
+                                  (remove nil? (expand-wildcard val))))
+                              true]
 
         (= :path-predicate t) (let [compiled-pred (compile-expression-ast arg)]
-                                (fn [val scope is-multiple?]
-                                  (vec (filter #(compiled-pred (assoc scope :this %)) val))))))))
+                                [(fn [val scope is-multiple?]
+                                   (vec (filter #(compiled-pred (assoc scope :this %)) val)))
+                                 true])
+
+        :else [(let [compiled-expr (compile-expression-ast cmp)]
+                 (fn [val scope is-multiple?]
+                   (let [result (compiled-expr scope)
+                         result (if (string? result) (keyword result) result)]
+                     (if is-multiple?
+                       (remove nil? (map #(get % result) val))
+                       (get val result)))))
+               false]))))
 
 (defn- compile-path [[_ & path-comps]]
   (let [compiled-comps (mapv compile-path-component path-comps)
@@ -362,8 +373,8 @@ string-literal
               (if (= path-root cmp)
                 val
 
-                (if (fn? cmp)
-                  (cmp val scope is-multiple?)
+                (if (vector? cmp)
+                  ((first cmp) val scope is-multiple?)
 
                   (if is-multiple?
                     (remove nil? (map #(get % cmp) val))
@@ -371,7 +382,9 @@ string-literal
 
           (if (empty? tail)
             next-val
-            (recur tail next-val (or is-multiple? (fn? cmp)))))))))
+            (recur tail next-val (or is-multiple?
+                                     (and (vector? cmp)
+                                          (second cmp))))))))))
 
 (def expressions-compile-fns
   {:expr compile-expr-expr
@@ -453,3 +466,7 @@ string-literal
               :else n)]
 
     res))
+
+(comment
+  (expression-parser "foo.(a).c")
+  )

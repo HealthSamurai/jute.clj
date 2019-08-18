@@ -44,7 +44,6 @@
       (testing desc
         (is (= ((compile template) scope) result))))))
 
-
 (deftest documentation-examples-test
   (testing "The first example from README.md"
     (let [template {:type "book"

@@ -243,25 +243,25 @@ tests:
   #       - 22.99
   #       - 1.3
 
-  # - desc: path expressions allow expressions as path elements
-  #   scope:
-  #     <<: *goessner
-  #   template:
-  #     first: $ store.book.(otherVar)
-  #     second: $ store.(thirdVar).0
-  #   result:
-  #     first:
-  #       category: "fiction"
-  #       author: "J. R. R. Tolkien"
-  #       title: "The Lord of the Rings"
-  #       isbn: "0-395-19395-8"
-  #       price: 22.99
+  - desc: path expressions allow dynamic expressions as a path elements
+    scope:
+      <<: *goessner
+    template:
+      first: $ store.book.(otherVar)
+      second: $ store.(thirdVar).0
+    result:
+      first:
+        category: "fiction"
+        author: "J. R. R. Tolkien"
+        title: "The Lord of the Rings"
+        isbn: "0-395-19395-8"
+        price: 22.99
 
-  #     second:
-  #       category: "reference"
-  #       author: "Nigel Rees"
-  #       title: "Sayings of the Century"
-  #       price: 8.95
+      second:
+        category: "reference"
+        author: "Nigel Rees"
+        title: "Sayings of the Century"
+        price: 8.95
 
   # - desc: boolean logic expressions are evaluated properly
   #   scope:
