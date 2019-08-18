@@ -70,9 +70,24 @@ which will perform this transformation.
 
 We'll start our template with a `type: book` flag:
 
-```yaml
+<table>
+<thead>
+<tr><th>Template</th><th>Result</th></tr>
+</thead>
+<tbody>
+<tr><td>
+
+```yml
 type: "book"
 ```
+</td><td>
+
+```yml
+type: "book"
+```
+</td></tr>
+</tbody>
+</table>
 
 This tiny document is a valid JUTE template which will always procude
 a `{"type": "book"}` result regardless the input data. Actually,
@@ -85,10 +100,26 @@ templates.
 Let's move to the `author` field. Obviously we're gonna take an
 author's name from an incoming data:
 
+<table>
+<thead>
+<tr><th>Template</th><th>Result</th></tr>
+</thead>
+<tbody>
+<tr><td>
+
 ```yml
 type: "book"
 author: "$ book.author.name"
 ```
+</td><td>
+
+```yml
+type: "book"
+author: "M. Soloviev"
+```
+</td></tr>
+</tbody>
+</table>
 
 To tell JUTE that an `author` field will be dynamic we put a dollar
 sign at the beginning of a value's string. The rest of the string is a
