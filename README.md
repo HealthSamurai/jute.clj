@@ -202,7 +202,48 @@ content:
 
 Instead of telling an exact path, we describe a condition which an
 array element should met to be selected for the next step of path
-evaluation. Use `this` keyword to reference current element in array.
+evaluation. Use `this` keyword to reference current element in an
+array. A result of a predicate search is always an array, even if
+there is only one element matching criteria.
+
+The final step is to extract `content` property from every element in
+the `content` array. In most programming languages nowadays it's done
+using a [map
+function](https://en.wikipedia.org/wiki/Map_(higher-order_function))
+which executes same code on every element in an array and returns
+results an array with preserved order. In JUTE we have `map` as well,
+but it's not a function, it's a **directive**:
+
+<table>
+<thead>
+<tr><th>Template</th><th>Result</th></tr>
+</thead>
+<tbody>
+<tr><td>
+
+```yml
+type: book
+author: $ book.author.name
+title: $ book.title
+content: 
+  $map: $ book.chapters.*(this.type = "content")
+  $as: i
+  $body: $ i.content
+```
+</td><td>
+
+```yml
+type: book
+author: M. Soloviev
+title: Approach to Cockroach
+content:
+- Chapter 1
+- Chapter 2
+- Chapter 3
+```
+</td></tr>
+</tbody>
+</table>
 
 ## License
 
