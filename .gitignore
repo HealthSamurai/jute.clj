@@ -12,3 +12,4 @@ pom.xml.asc
 .cpcache
 /src/jute/.nrepl-port
 target
+/js

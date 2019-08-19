@@ -1,6 +1,10 @@
 sudo: true
 language: java
-script: make test
+script:
+  - make test
+  - make js
+  - make jstest
+
 install:
   - curl -O https://download.clojure.org/install/linux-install-1.10.1.466.sh
   - chmod +x linux-install-1.10.1.466.sh

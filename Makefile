@@ -1,4 +1,4 @@
-.PHONY: test repl
+.PHONY: test repl js jstest
 
 repl:
 	clj -A:test:nrepl -e "(-main)" -r
@@ -6,5 +6,9 @@ repl:
 test:
 	clojure -A:test:runner
 
+js:
+	clojure -A:cljs -m cljs.main --optimizations advanced \
+				--target nodejs --output-to "js/jute.js" --output-dir "js" -c jute.js
+
 jstest:
-	echo "JS tests goes here" && node --version
+	node --version && cd test && node runner.js

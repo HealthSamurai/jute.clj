@@ -5,7 +5,11 @@
         instaparse           {:mvn/version"1.4.8"}}
 
  :aliases
- {:nrepl
+ {:cljs
+  {:extra-deps
+   {org.clojure/clojurescript     {:mvn/version "1.10.520"}}}
+
+  :nrepl
   {:extra-deps
    {spyscope                      {:mvn/version "0.1.6"}
     org.clojure/clojure           {:mvn/version "1.10.0-RC4"}

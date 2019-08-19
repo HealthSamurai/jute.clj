@@ -473,6 +473,3 @@ string-literal
 
     res))
 
-(comment
-  (expression-parser "foo.(a).c")
-  )
