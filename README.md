@@ -245,6 +245,17 @@ content:
 </tbody>
 </table>
 
+A directive is an object in a template with one or several keys
+starting with a dollar sign. A dollar sign tells JUTE that this object
+needs to be evaluated in a special way depending on directive's
+purpose. In case of `$map` it takes a value from a `$map` key,
+iterates through it and executes `$body` on every element aliasing it
+with a name from `$as` key. Other available directives are `$if`,
+`$switch`, `$fn` and `$call` - you'll find all of them in the reference.
+
+That's it, in this tutorial we wrote a simple template and touched a
+little bit every aspect of a JUTE language.
+
 ## License
 
 Copyright © 2019 Health Samurai Team
