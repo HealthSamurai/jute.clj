@@ -254,6 +254,35 @@ with a name from `$as` key. Other available directives are `$if`,
 That's it, in this tutorial we wrote a simple template and touched a
 little bit every aspect of a JUTE language.
 
+# An FizzBuzz Example
+
+A classicall [FizzBuzz](http://wiki.c2.com/?FizzBuzzTest) programm in JUTE:
+
+```yaml
+$call: join-str
+$args:
+  - " "
+  - $map: $ range(0, 50, 1)
+    $as: num
+    $body:
+      $let:
+        - s: ""
+
+        - s:
+            $if: $ num % 3 = 0
+            $then: $ s + "Fizz"
+            $else: $ s
+
+        - s:
+            $if: $ num % 5 = 0
+            $then: $ s + "Buzz"
+            $else: $ s
+      $body:
+        $if: $ s = ""
+        $then: $ num
+        $else: $ toString(num) + "-" + s
+```
+
 # Reference
 
 ## Terminology
@@ -402,6 +431,8 @@ To be written.
 ### groupBy
 
 ### len
+
+### range
 
 # License
 

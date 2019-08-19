@@ -74,4 +74,25 @@
               :author "M. Soloviev"
               :title "Approach to Cockroach"
               :content ["Chapter 1" "Chapter 2" "Chapter 3"]
-              :content2 ["Chapter 1" "Chapter 2" "Chapter 3"]})))))
+              :content2 ["Chapter 1" "Chapter 2" "Chapter 3"]}))))
+
+  (testing "The FizzBuzz challenge"
+    (let [t {:$call "join-str"
+             :$args [" "
+                     {:$map "$ range(0, 50, 1)"
+                      :$as "num"
+                      :$body {:$let
+                              [{:s ""}
+                               {:s {:$if "$ num % 3 = 0"
+                                    :$then "$ s + \"Fizz\""
+                                    :$else "$ s"}}
+
+                               {:s {:$if "$ num % 5 = 0"
+                                    :$then "$ s + \"Buzz\""
+                                    :$else "$ s"}}]
+
+                              :$body {:$if "$ s = \"\""
+                                      :$then "$ num"
+                                      :$else "$ toString(num) + \"-\" + s"}}}]}]
+      (is (= "0-FizzBuzz 1 2 3-Fizz 4 5-Buzz 6-Fizz 7 8 9-Fizz 10-Buzz 11 12-Fizz 13 14 15-FizzBuzz 16 17 18-Fizz 19 20-Buzz 21-Fizz 22 23 24-Fizz 25-Buzz 26 27-Fizz 28 29 30-FizzBuzz 31 32 33-Fizz 34 35-Buzz 36-Fizz 37 38 39-Fizz 40-Buzz 41 42-Fizz 43 44 45-FizzBuzz 46 47 48-Fizz 49"
+             ((compile t) {}))))))

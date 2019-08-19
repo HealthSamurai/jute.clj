@@ -15,6 +15,7 @@
    :concat concat
    :merge merge
    :str to-string
+   :range range
    :toString to-string
    :hash hash
    :toInt (fn [v] (if (string? v)
