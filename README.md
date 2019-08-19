@@ -346,6 +346,63 @@ $body:
   perimeter: $ pi * 2 * radius
 ```
 
+### $fn
+
+`$fn` directive returns a function which can be invoked later in an
+expresson. Value of an `$fn` key is an array containing names of
+function arguments. `$body` key contains function body.
+
+Most likely you'll put an `$fn` directive into `$let` directive to
+make function accessible inside `$let`'s body:
+
+```yaml
+$let:
+  circleArea:
+    $fn: ["radius"]
+    $body: $ 3.1415 * radius * radius
+$body:
+  area: $ circleArea(circles.0.radius)
+```
+
+### $call
+
+`$call` directive is a way to call a function outside of JUTE
+expression:
+
+```yaml
+fullName:
+  $call: join-str
+  $args:
+    - " "
+    - - $ pt.firstName
+      - $ pt.middleName
+      - $ pt.lastName
+```
+
+## Functions
+
+To be written.
+
+### join-str
+
+### substring
+
+### concat
+
+### merge
+
+### toString
+
+### toInt
+
+### toDecimal
+
+### hash
+
+### groupBy
+
+### len
+
 # License
 
 Copyright © 2019 Health Samurai Team

@@ -5,12 +5,17 @@
             [clojure.string :as str]
             #_[fhirpath.core :as fhirpath]))
 
+(defn- to-string [v]
+  (if (keyword? v) (name v) (str v)))
+
 (def standard-fns
   {:join str/join
+   :join-str str/join
    :substring subs
    :concat concat
    :merge merge
-   :str (fn [v] (if (keyword? v) (name v) (str v)))
+   :str to-string
+   :toString to-string
    :hash hash
    :toInt (fn [v] (if (string? v)
                     (try
