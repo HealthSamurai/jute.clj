@@ -1,31 +1,18 @@
-matrix:
-  include:
-  - sudo: true
-    language: java
-    script: make test
-    install:
-      - curl -O https://download.clojure.org/install/linux-install-1.10.1.466.sh
-      - chmod +x linux-install-1.10.1.466.sh
-      - sudo ./linux-install-1.10.1.466.sh
+sudo: true
+language: java
+script: make test
+install:
+  - curl -O https://download.clojure.org/install/linux-install-1.10.1.466.sh
+  - chmod +x linux-install-1.10.1.466.sh
+  - sudo ./linux-install-1.10.1.466.sh
+  - nvm install 10.16.0
 
-    jdk:
-      - openjdk11
+jdk:
+  - openjdk11
 
-    cache:
-      directories:
-        - $HOME/.m2
-        - $HOME/.cljs
-        - $HOME/.gitlibs
-        - .cpcache
-
-  - language: node_js
-    node_js:
-      - 10
-    script: make jstest
-    cache:
-      directories:
-        - $HOME/.m2
-        - $HOME/.cljs
-        - $HOME/.gitlibs
-        - .cpcache
-
+cache:
+  directories:
+    - $HOME/.m2
+    - $HOME/.cljs
+    - $HOME/.gitlibs
+    - .cpcache
