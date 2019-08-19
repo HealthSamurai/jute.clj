@@ -5,3 +5,6 @@ repl:
 
 test:
 	clojure -A:test:runner
+
+jstest:
+	echo "JS tests goes here" && node --version
