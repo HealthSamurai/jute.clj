@@ -412,27 +412,27 @@ fullName:
 
 To be written.
 
-### join-str
+### join-str(separator, strArray)
 
-### substring
+### substring(str, start, end)
 
-### concat
+### concat(arrays...)
 
-### merge
+### merge(objects...)
 
-### toString
+### toString(val)
 
-### toInt
+### toInt(str)
 
-### toDecimal
+### toDecimal(str)
 
-### hash
+### hash(any)
 
-### groupBy
+### groupBy(fn, array)
 
-### len
+### len(any)
 
-### range
+### range(begin, end, step)
 
 # License
 
