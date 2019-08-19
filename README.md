@@ -5,9 +5,7 @@ language](https://github.com/HealthSamurai/jute.js).
 
 [![Build Status](https://travis-ci.org/HealthSamurai/jute.clj.svg?branch=master)](https://travis-ci.org/HealthSamurai/jute.clj)
 
-# Reference
-
-## Introduction
+# Introduction
 
 JUTE stands for JSON Uniform Templates and it's a small language to
 describe JSON documents transformations. JUTE templates are JSON
@@ -16,7 +14,7 @@ there is no way for a template to currupt a runtime environment [if
 you use a safe YAML
 parser](https://arp242.net/yaml-config.html#insecure-by-default).
 
-## Few words about YAML
+# Few words about YAML
 
 JSON format wasn't designed for ease of use by human beings, it's
 relatively hard to write JSON by hands. That's why JUTE's primary
@@ -25,7 +23,7 @@ write, thanks to its clean syntax and indentation-based nesting. Don't
 be confused with it, YAML and JSON are interchangeable, and there are
 even [online conversion tools](https://www.json2yaml.com/) beetween them.
 
-## An example
+# Quickstart Tutorial
 
 Let's say we have a document describing a book:
 
@@ -256,7 +254,61 @@ with a name from `$as` key. Other available directives are `$if`,
 That's it, in this tutorial we wrote a simple template and touched a
 little bit every aspect of a JUTE language.
 
-## License
+# Reference
+
+## Terminology
+
+**Template** - a JSON-like data structure to be evaluated by JUTE.
+
+**Scope** - an object where JUTE looks up values and functions to
+evaluate expressions and directives. 
+
+**Expression** - a string value within a template starting with a
+dollar sign which will be evaluated by JUTE.
+
+**Directive** - an object within a template containing one or several
+keys starting with a dollar sign with custom evaluation logic.
+
+## Expressions
+
+I'm quite short in time right now to describe full expressions
+syntax. To get some understaing of them please take a look at the
+[expressions test
+suite](https://github.com/HealthSamurai/jute.clj/blob/master/spec/expressions.yml). Commented
+out pieces are still need to be implemented.
+
+Available operators are: `!= = ! * % <= / - >= < + > && ||`
+
+## Directives
+
+### $if
+
+Performs conditional evaluation:
+
+```yaml
+gender:
+  $if: $ sex == "m"
+  $then: Male
+  $else: Female
+```
+
+If condition is true, direcitve is evaluated into a value of `$then`,
+`$else` otherwise. If a condition is false and `$else` is omitted,
+directive evaluates into null.
+
+NB there is a short form of `$if` directive:
+
+```yaml
+patientName:
+  $if: patient.firstName && patient.lastName
+  firstName: $ patient.firstName
+  lastName: $ patient.lastName
+```
+
+In a shortened form directrive is evaluated into itself (without the
+`$if` attribute) when condition is true, null otherwise.
+
+# License
 
 Copyright © 2019 Health Samurai Team
 
