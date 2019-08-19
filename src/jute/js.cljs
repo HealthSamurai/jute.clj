@@ -5,7 +5,7 @@
   (let [compiled (j/compile (js->clj template :keywordize-keys true)
                             (js->clj options :keywordize-keys true))]
     (fn [scope]
-      (clj->js (compiled scope)))))
+      (clj->js (compiled (js->clj scope :keywordize-keys true))))))
 
 (defn ^:export drop-blanks [n]
   (j/drop-blanks (js->clj n :keywordize-keys true)))

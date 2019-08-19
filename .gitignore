@@ -13,3 +13,5 @@ pom.xml.asc
 /src/jute/.nrepl-port
 target
 /js
+/test/node_modules
+/test/.nyc_output

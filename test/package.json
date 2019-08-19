@@ -1,0 +1,23 @@
+{
+  "name": "jute-test-runner",
+  "version": "1.0.0",
+  "description": "",
+  "main": "runner.js",
+  "scripts": {
+    "test": "node runner.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HealthSamurai/jute.clj.git"
+  },
+  "author": "Mike Lapshin",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/HealthSamurai/jute.clj/issues"
+  },
+  "homepage": "https://github.com/HealthSamurai/jute.clj#readme",
+  "dependencies": {
+    "js-yaml": "^3.13.1",
+    "tap": "^14.6.1"
+  }
+}
