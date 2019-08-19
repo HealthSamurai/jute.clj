@@ -2,16 +2,24 @@
   (:refer-clojure :exclude [compile])
   (:require [clojure.set :as cset]
             [instaparse.core :as insta]
-            [clojure.string :as str]
-            #_[fhirpath.core :as fhirpath]))
+            [clojure.string :as str]))
 
 (defn- to-string [v]
   (if (keyword? v) (name v) (str v)))
 
+(defn- to-decimal [v]
+  (if (string? v)
+    (try
+      #?(:clj (Float/parseFloat v)
+         :cljs (js/parseFloat v))
+      (catch #?(:clj Exception :cljs js/Object) e 0.0))
+    v))
+
 (def standard-fns
-  {:join str/join
-   :join-str str/join
-   :substring subs
+  {:join str/join       ;; deprecated
+   :joinStr str/join
+   :substring subs      ;; deprecated
+   :substr    subs
    :concat concat
    :merge merge
    :str to-string
@@ -25,12 +33,8 @@
                       (catch #?(:clj Exception :cljs js/Object) e 0))
                     v))
 
-   :toDecimal (fn [v] (if (string? v)
-                        (try
-                          #?(:clj (Float/parseFloat v)
-                             :cljs (js/parseFloat v))
-                          (catch #?(:clj Exception :cljs js/Object) e 0.0))
-                        v))
+   :toDecimal to-decimal           ;; deprecated
+   :toDec to-decimal
 
    :now (fn [] #?(:clj (new java.util.Date)
                   :cljs (new js/Date)))
@@ -472,4 +476,3 @@ string-literal
               :else n)]
 
     res))
-

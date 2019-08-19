@@ -401,7 +401,7 @@ expression:
 
 ```yaml
 fullName:
-  $call: join-str
+  $call: joinStr
   $args:
     - " "
     - - $ pt.firstName
@@ -413,19 +413,19 @@ fullName:
 
 To be written.
 
-### join-str(separator, strArray)
+### joinStr(separator, strArray)
 
-### substring(str, start, end)
+### substr(str, start, end)
 
 ### concat(arrays...)
 
 ### merge(objects...)
 
-### toString(val)
+### toStr(val)
 
 ### toInt(str)
 
-### toDecimal(str)
+### toDec(str)
 
 ### hash(any)
 
