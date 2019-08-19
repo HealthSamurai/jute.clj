@@ -124,14 +124,22 @@ author: "M. Soloviev"
 To tell JUTE that an `author` field will be dynamic we put a dollar
 sign at the beginning of a value's string. The rest of the string is a
 path for the data we need. Such strings starting with a dollar signs
-are called JUTE expressions and they have pretty rich syntax to
-describe various operations on an incoming data.
+are called JUTE **expressions** and they have pretty rich syntax to
+describe various operations on an incoming data or a **scope**.
 
-Please note that it's ok to omit double-quotes (`""`) for strings in
+One of expression's abilities is an extract data by **path**. Every
+path consists of one or several **path components** separated by
+dot. In simpliest case a path component is a field name where JUTE
+interpreter will dig to get value. In our case it fill take the `book`
+field from the scope root, then `author`, then `name`. You can use
+digits as path component as well to get N-th value from an
+array. Array indices are starting with 0.
+
+Please note that it's ok to omit double-quotes (`"`) for strings in
 YAML, so instead of writing `"$ foo.bar"` we can just write `$
 foo.bar`.
 
-So we can fill the `title` field using similar expression and omit
+We can fill the `title` field using similar path expression and omit
 double-quotes for readability:
 
 <table>
@@ -157,9 +165,44 @@ title: Approach to Cockroach
 </tbody>
 </table>
 
-Let's proceed to the `content` part. There are two tasks we need to
-perform: filter out all chapters where `chapter.type != "content"` and
-take an `chapter` attribute of every filtered chapter.
+Let's proceed to the `content` part. We need to filter out chapters
+where `type` doesn't equal to `"content"`. There is a special type of
+a path element to do this called **predicate search**:
+
+<table>
+<thead>
+<tr><th>Template</th><th>Result</th></tr>
+</thead>
+<tbody>
+<tr><td>
+
+```yml
+type: book
+author: $ book.author.name
+title: $ book.title
+content: $ book.chapters.*(this.type = "content")
+```
+</td><td>
+
+```yml
+type: book
+author: M. Soloviev
+title: Approach to Cockroach
+content:
+- type: content
+  content: Chapter 1
+- type: content
+  content: Chapter 2
+- type: content
+  content: Chapter 3
+```
+</td></tr>
+</tbody>
+</table>
+
+Instead of telling an exact path, we describe a condition which an
+array element should met to be selected for the next step of path
+evaluation. Use `this` keyword to reference current element in array.
 
 ## License
 
