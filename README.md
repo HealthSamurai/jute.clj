@@ -7,7 +7,7 @@ language](https://github.com/HealthSamurai/jute.js).
 
 # Introduction
 
-JUTE stands for JSON Uniform Templates and it's a small language to
+JUTE stands for **J**SON **U**niform **Te**mplates and it's a small language to
 describe JSON documents transformations. JUTE templates are JSON
 documents itself. It's safe to evaluate user-provided JUTE templates,
 there is no way for a template to currupt a runtime environment [if
@@ -307,6 +307,44 @@ patientName:
 
 In a shortened form directrive is evaluated into itself (without the
 `$if` attribute) when condition is true, null otherwise.
+
+### $map
+
+`$map` directive evaluates into array containing results of applying
+it's `$body` on every element from a `$map` array. Array element is
+aliased by name from `$as` field. If `$as` is ommited, `this` is used
+instead.
+
+```yaml
+funnyStuff:
+  $map: 
+  - 1
+  - 2
+  - 3
+  - 4
+  $as: item
+  $body: $ item * 2
+```
+
+TODO: we need to have an index among with element itself.
+
+### $reduce
+
+To be done later.
+
+### $let
+
+`$let` directive evaluates into it's `$body` with scope extended with
+additional values:
+
+```yaml
+$let:
+  pi: 3.1415
+  radius: 3
+$body:
+  area: $ pi * radius * radius
+  perimeter: $ pi * 2 * radius
+```
 
 # License
 

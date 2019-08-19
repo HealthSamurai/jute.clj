@@ -135,7 +135,7 @@ string-literal
 
 (defn- compile-map-directive [node options]
   (let [compiled-map (compile* (:$map node) options)
-        var-name (keyword (:$as node))
+        var-name (keyword (or (:$as node) "this"))
         compiled-body (compile* (:$body node) options)]
 
     (fn [scope]
