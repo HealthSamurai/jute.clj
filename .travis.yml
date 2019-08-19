@@ -19,4 +19,5 @@ cache:
     - $HOME/.m2
     - $HOME/.cljs
     - $HOME/.gitlibs
+    - $TRAVIS_BUILD_DIR/test/node_modules
     - .cpcache
