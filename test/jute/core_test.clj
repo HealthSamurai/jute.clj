@@ -77,7 +77,7 @@
               :content2 ["Chapter 1" "Chapter 2" "Chapter 3"]}))))
 
   (testing "The FizzBuzz challenge"
-    (let [t {:$call "join-str"
+    (let [t {:$call "joinStr"
              :$args [" "
                      {:$map "$ range(0, 50, 1)"
                       :$as "num"
