@@ -236,11 +236,23 @@ string-literal
                                    (assoc-in [:result key] compiled-val)
                                    (assoc :dynamic? (or (:dynamic? acc) (fn? compiled-val))))))
                            {:dynamic? false :result {}} node)]
+
         (if (:dynamic? result)
-          (fn [scope]
-            (reduce (fn [acc [key val]]
-                      (assoc acc key (eval-node val scope)))
-                    {} (:result result)))
+          (if (:discard-map-when-everything-evaluated-to-null options)
+            (let [dynamic-keys (filter #(fn? (get (:result result) %))
+                                       (keys (:result result)))]
+              (fn [scope]
+                (let [res (reduce (fn [acc [key val]]
+                                    (assoc acc key (eval-node val scope)))
+                                  {} (:result result))]
+                  (if (every? #(nil? (get res %)) dynamic-keys)
+                    nil
+                    res))))
+
+            (fn [scope]
+              (reduce (fn [acc [key val]]
+                        (assoc acc key (eval-node val scope)))
+                      {} (:result result))))
 
           (:result result)))
 

@@ -7,6 +7,7 @@ const specFiles = [
   "fn_directive.yml",
   "if_directive.yml",
   "let_directive.yml",
+  "special_options.yml",
   "map_directive.yml",
   "expressions.yml"
 ];
@@ -17,7 +18,7 @@ specFiles.forEach((f) => {
   tap.test(spec.suite, t => {
     spec.tests.forEach(specTest => {
       t.test(specTest.desc, t => {
-        const tpl = jute.compile(specTest.template, {});
+        const tpl = jute.compile(specTest.template, specTest.options || {});
         const result = tpl(specTest.scope);
         
         t.strictSame(result, specTest.result, specTest.desc);
