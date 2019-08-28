@@ -1,7 +1,9 @@
 ---
-suite: Evaluating maps with :discard-map-when-everything-evaluated-to-null
+suite:
 tests:
-  - desc: discards maps when all values from expressions are nulls 
+  - desc: Evaluating maps with :discard-map-when-everything-evaluated-to-null option
+      discards maps when all values from expressions are nulls
+
     scope: null
     options:
       discard-map-when-everything-evaluated-to-null: true
@@ -14,3 +16,27 @@ tests:
         z: $ foo.bar
 
     result: null
+
+  - desc: Evaluating maps with :discard-map-when-everything-evaluated-to-null option
+      correctly handles 'false' values
+    scope:
+      foo:
+        bar: false
+
+    options:
+      discard-map-when-everything-evaluated-to-null: true
+
+    template:
+      bar: 42
+      foo:
+        x: 12
+        y: 24
+        z: $ foo.bar
+
+    result:
+      bar: 42
+      foo:
+        x: 12
+        y: 24
+        z: false
+

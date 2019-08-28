@@ -44,7 +44,7 @@
       (testing desc
         (is (= ((compile template) scope) result))))))
 
-(deftest expressions-test
+(deftest special-options-test
   (let [suite (yaml/from-file "spec/special_options.yml" true)]
     (doseq [{:keys [desc scope template result options]} (:tests suite)]
       (testing desc
