@@ -198,12 +198,12 @@ string-literal
 
 (defn- compile-call-directive [node options]
   (let [fn-name (keyword (:$call node))
-        args (map #(compile* % options) (:$args node))]
+        args (compile* (:$args node) options)]
 
     (fn [scope]
       (if-let [fun (or (and (fn? (get scope fn-name)) (get scope fn-name))
                        (get standard-fns (keyword fn-name)))]
-        (let [arg-values (mapv #(eval-node % scope) args)]
+        (let [arg-values (eval-node args scope)]
           (apply fun arg-values))
 
         (let [err (str "Cannot find function " fn-name " in the current scope")]

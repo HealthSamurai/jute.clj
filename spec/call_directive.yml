@@ -1,0 +1,31 @@
+---
+suite: $call directive
+tests:
+  - desc: calls a function with provided arguments
+
+    scope:
+      names:
+        - "Bob"
+        - "John"
+        - "Nick"
+
+    template:
+      $call: joinStr
+      $args:
+        - ", "
+        - $ names
+
+    result: "Bob, John, Nick"
+
+  - desc: allows $args to be dynamically evaluated
+    scope:
+      args:
+        - ", "
+        - - foo
+          - bar
+
+    template:
+      $call: joinStr
+      $args: $ args
+
+    result: "foo, bar"

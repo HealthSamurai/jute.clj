@@ -6,6 +6,7 @@ const fs = require('fs');
 const specFiles = [
   "fn_directive.yml",
   "if_directive.yml",
+  "call_directive.yml",
   "let_directive.yml",
   "special_options.yml",
   "map_directive.yml",

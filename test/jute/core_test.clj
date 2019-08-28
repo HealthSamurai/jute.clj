@@ -38,6 +38,12 @@
       (testing desc
         (is (= ((compile template) scope) result))))))
 
+(deftest fn-directive-test
+  (let [suite (yaml/from-file "spec/call_directive.yml" true)]
+    (doseq [{:keys [desc scope template result]} (:tests suite)]
+      (testing desc
+        (is (= ((compile template) scope) result))))))
+
 (deftest expressions-test
   (let [suite (yaml/from-file "spec/expressions.yml" true)]
     (doseq [{:keys [desc scope template result]} (:tests suite)]
