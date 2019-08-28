@@ -1,5 +1,5 @@
 ---
-suite:
+suite: JUTE special options
 tests:
   - desc: Evaluating maps with :discard-map-when-everything-evaluated-to-null option
       discards maps when all values from expressions are nulls

@@ -11,4 +11,4 @@ js:
 				--target nodejs --output-to "js/jute.js" --output-dir "js" -c jute.js
 
 jstest:
-	node --version && cd test && npm install && `npm bin`/tap --no-coverage runner.js
+	node --version && cd test && `npm bin`/tap --no-coverage runner.js

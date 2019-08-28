@@ -1,6 +1,7 @@
 sudo: true
 language: java
 script:
+  - cd test && npm install
   - make test
   - make js
   - make jstest
