@@ -13,7 +13,7 @@
     (try
       #?(:clj (Float/parseFloat v)
          :cljs (js/parseFloat v))
-      (catch #?(:clj Exception :cljs js/Object) e 0.0))
+      (catch #?(:clj Exception :cljs js/Object) e nil))
     v))
 
 (def standard-fns
@@ -31,7 +31,7 @@
                     (try
                       #?(:clj (java.lang.Long/parseLong v)
                          :cljs (js/parseInt v))
-                      (catch #?(:clj Exception :cljs js/Object) e 0))
+                      (catch #?(:clj Exception :cljs js/Object) e nil))
                     v))
 
    :toDecimal to-decimal           ;; deprecated
