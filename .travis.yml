@@ -6,10 +6,7 @@ script:
   - make test
   - make js
   - make jstest
-  - make jar
-
-deploy:
-  - make clojars-push
+  - make jar && make clojars-push
 
 install:
   - curl -O https://download.clojure.org/install/linux-install-1.10.1.466.sh
