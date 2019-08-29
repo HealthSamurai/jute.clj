@@ -12,3 +12,9 @@ js:
 
 jstest:
 	node --version && cd test && `npm bin`/tap --no-coverage runner.js
+
+jar:
+	clojure -A:jar
+
+clojars-push: 
+	clojure -A:deploy

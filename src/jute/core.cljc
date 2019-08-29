@@ -2,7 +2,8 @@
   (:refer-clojure :exclude [compile])
   (:require [clojure.set :as cset]
             [instaparse.core :as insta]
-            [clojure.string :as str]))
+            [clojure.string :as str])
+  (:gen-class))
 
 (defn- to-string [v]
   (if (keyword? v) (name v) (str v)))
@@ -495,6 +496,3 @@ string-literal
               :else n)]
 
     res))
-
-(comment
-  (expression-parser "nullPath"))

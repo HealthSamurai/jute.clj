@@ -5,7 +5,21 @@
         instaparse           {:mvn/version"1.4.8"}}
 
  :aliases
- {:cljs
+ {:jar
+  {:extra-deps
+   {luchiniatwork/cambada {:mvn/version "1.0.0"}}
+   :main-opts ["-m" "cambada.jar"
+               "-m" "jute.core"
+               "--app-group-id" "com.health-samurai"
+               "--app-artifact-id" "jute"
+               "--app-version" "0.1.0-SNAPSHOT"]}
+
+  :deploy
+  {:extra-deps {deps-deploy {:mvn/version "RELEASE"}}
+   :main-opts ["-m" "deps-deploy.deps-deploy" "deploy" "target/jute-0.1.0-SNAPSHOT.jar"]}
+
+
+  :cljs
   {:extra-deps
    {org.clojure/clojurescript     {:mvn/version "1.10.520"}}}
 

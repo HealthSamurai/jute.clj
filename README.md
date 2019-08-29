@@ -6,6 +6,8 @@ development stage.
 
 [![Build Status](https://travis-ci.org/HealthSamurai/jute.clj.svg?branch=master)](https://travis-ci.org/HealthSamurai/jute.clj)
 
+[![Clojars Project](https://img.shields.io/clojars/v/com.health-samurai/jute.svg)](https://clojars.org/com.health-samurai/jute)
+
 # Introduction
 
 JUTE stands for **J**SON **U**niform **Te**mplates and it's a small language to
