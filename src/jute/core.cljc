@@ -3,7 +3,7 @@
   (:require [clojure.set :as cset]
             [instaparse.core :as insta]
             [clojure.string :as str])
-  (:gen-class))
+  #?(:clj (:gen-class)))
 
 (defn- to-string [v]
   (if (keyword? v) (name v) (str v)))
