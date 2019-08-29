@@ -263,6 +263,28 @@ tests:
         title: "Sayings of the Century"
         price: 8.95
 
+  - desc: comparsion with null works as expected
+    scope:
+      foo: null
+      "null": 42
+      nullPath: 42
+
+    template:
+      result:
+        $if: $ foo = null
+        $then: "it works"
+        $else: "it's broken"
+
+      result2:
+        $if: $ foo = nullPath
+        $then: "it's broken"
+        $else: "it works"
+
+
+    result:
+      result: it works
+      result2: it works
+
   # - desc: boolean logic expressions are evaluated properly
   #   scope:
   #     foo: 2

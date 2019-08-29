@@ -24,37 +24,37 @@
   (let [suite (yaml/from-file "spec/let_directive.yml" true)]
     (doseq [{:keys [desc scope template result]} (:tests suite)]
       (testing desc
-        (is (= ((compile template) scope) result))))))
+        (is (= result ((compile template) scope)))))))
 
 (deftest map-directive-test
   (let [suite (yaml/from-file "spec/map_directive.yml" true)]
     (doseq [{:keys [desc scope template result]} (:tests suite)]
       (testing desc
-        (is (= ((compile template) scope) result))))))
+        (is (= result ((compile template) scope)))))))
 
 (deftest fn-directive-test
   (let [suite (yaml/from-file "spec/fn_directive.yml" true)]
     (doseq [{:keys [desc scope template result]} (:tests suite)]
       (testing desc
-        (is (= ((compile template) scope) result))))))
+        (is (= result ((compile template) scope)))))))
 
 (deftest fn-directive-test
   (let [suite (yaml/from-file "spec/call_directive.yml" true)]
     (doseq [{:keys [desc scope template result]} (:tests suite)]
       (testing desc
-        (is (= ((compile template) scope) result))))))
+        (is (= result ((compile template) scope)))))))
 
 (deftest expressions-test
   (let [suite (yaml/from-file "spec/expressions.yml" true)]
     (doseq [{:keys [desc scope template result]} (:tests suite)]
       (testing desc
-        (is (= ((compile template) scope) result))))))
+        (is (= result ((compile template) scope)))))))
 
 (deftest special-options-test
   (let [suite (yaml/from-file "spec/special_options.yml" true)]
     (doseq [{:keys [desc scope template result options]} (:tests suite)]
       (testing desc
-        (is (= ((compile template options) scope) result))))))
+        (is (= result ((compile template options) scope)))))))
 
 (deftest documentation-examples-test
   (testing "The first example from README.md"

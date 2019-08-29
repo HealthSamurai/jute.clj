@@ -91,7 +91,7 @@ unary-expr
   = ('+' | '-' | '!') expr | terminal-expr
 
 <terminal-expr>
-  = bool-literal / num-literal / string-literal / fn-call / path / parens-expr
+  = bool-literal / num-literal / string-literal / null-literal/ fn-call / path / parens-expr
 
 fn-call
   = #'[a-zA-Z_]+' <'('> fn-call-args <')'>
@@ -132,6 +132,9 @@ num-literal
 
 bool-literal
   = 'true' !path-head | 'false' !path-head
+
+null-literal
+  = 'null' !path-head
 
 string-literal
   = <'\"'> #'[^\"]*'  <'\"'>
@@ -341,6 +344,9 @@ string-literal
   #?(:clj (read-string (apply str (rest ast)))
      :cljs (js/parseFloat (apply str (rest ast)))))
 
+(defn- compile-null-literal [ast]
+  nil)
+
 (defn- compile-bool-literal [[_ v]]
   (= v "true"))
 
@@ -418,6 +424,7 @@ string-literal
    :comparison-expr compile-op-expr
    :unary-expr compile-unary-expr
    :num-literal compile-num-literal
+   :null-literal compile-null-literal
    :bool-literal compile-bool-literal
    :string-literal compile-string-literal
    :fn-call compile-fn-call
@@ -488,3 +495,6 @@ string-literal
               :else n)]
 
     res))
+
+(comment
+  (expression-parser "nullPath"))
