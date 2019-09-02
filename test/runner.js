@@ -9,6 +9,7 @@ const specFiles = [
   "call_directive.yml",
   "let_directive.yml",
   "special_options.yml",
+  "switch_options.yml",
   "map_directive.yml",
   "expressions.yml"
 ];

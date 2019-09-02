@@ -8,8 +8,8 @@ tests:
       foo: 1
     template:
       $switch: $ foo + 1
-      1: "wrong"
-      2: "right"
+      "1": "wrong"
+      "2": "right"
 
     result: "right"
 

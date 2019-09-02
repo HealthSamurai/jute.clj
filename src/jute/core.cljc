@@ -200,6 +200,14 @@ string-literal
         (let [new-scope (merge scope (zipmap arg-names args))]
           (eval-node compiled-body new-scope))))))
 
+(defn- compile-switch-directive [node options]
+  (let [compiled-node (reduce-kv (fn [m k v] (assoc m k (compile* v options))) {} node)]
+
+    (fn [scope]
+      (let [v (eval-node (:$switch compiled-node) scope)
+            v-kw (keyword (str v))]
+        (eval-node (get compiled-node v-kw (:$default compiled-node)) scope)))))
+
 (defn- compile-call-directive [node options]
   (let [fn-name (keyword (:$call node))
         args (compile* (:$args node) options)]
@@ -219,6 +227,7 @@ string-literal
    :$let compile-let
    :$map compile-map-directive
    :$call compile-call-directive
+   :$switch compile-switch-directive
    :$fn compile-fn-directive})
 
 (defn- compile-map [node options]
