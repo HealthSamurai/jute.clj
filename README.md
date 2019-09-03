@@ -1,8 +1,8 @@
 # jute.clj
 
-A Clojure/ClojureScript implementation of the [JUTE template
-language](https://github.com/HealthSamurai/jute.js). Still in early
-development stage.
+A Clojure/ClojureScript (Java/JavaScript) implementation of [JUTE
+template language](https://github.com/HealthSamurai/jute.js). Still in
+early development stage.
 
 [![Build Status](https://travis-ci.org/HealthSamurai/jute.clj.svg?branch=master)](https://travis-ci.org/HealthSamurai/jute.clj)
 
@@ -410,6 +410,24 @@ fullName:
       - $ pt.middleName
       - $ pt.lastName
 ```
+
+### $switch
+
+`$switch` directive takes a value of an expression and then compares
+it to all directive-level keys. If matching key found, directive
+evaluates into a value of corresponding key. `$default` key (if
+present) is used when no matching key was found. Evaluates to null if
+no match was found and there is no `$default` key.
+
+```yaml
+gender:
+  $switch: $ patient.sex
+  M: male
+  F: female
+  U: unknown
+  $default: other
+```
+
 
 ## Functions
 
