@@ -62,6 +62,12 @@
       (testing desc
         (is (= result ((compile template) scope)))))))
 
+(deftest special-options-test
+  (let [suite (yaml/from-file "spec/reduce_directive.yml" true)]
+    (doseq [{:keys [desc scope template result]} (:tests suite)]
+      (testing desc
+        (is (= result ((compile template) scope)))))))
+
 (deftest documentation-examples-test
   (testing "The first example from README.md"
     (let [template {:type "book"

@@ -428,6 +428,18 @@ gender:
   $default: other
 ```
 
+### $reduce
+
+`$reduce` directive performs standard [reduce
+operation](https://en.wikipedia.org/wiki/Fold_(higher-order_function)):
+
+```yaml
+sum:
+  $reduce: $ range(0, 10, 1)
+  $as: ["acc", "i"]
+  $start: 0
+  $body: $ acc + i
+```
 
 ## Functions
 

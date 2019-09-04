@@ -1,0 +1,45 @@
+---
+suite: $reduce directive
+tests:
+  - desc: does all the stuff which reduce function should do
+
+    scope:
+      names:
+        - "Bob"
+        - "John"
+        - "Nick"
+
+    template:
+      $reduce: $ names
+      $as: ["acc", "name"]
+      $start: ""
+      $body: $ acc + "|" + name
+
+    result: "|Bob|John|Nick"
+
+  - desc: works for objects too
+    scope:
+      items:
+        russia:
+          - omsk
+          - moscow
+          - saint-p
+
+        usa:
+          - orlando
+          - seattle
+          - springfield
+
+    template:
+      $reduce: $ items
+      $as: ["acc", "pair"]
+      $from: []
+      $body: $ concat(acc, pair.value)
+
+    result:
+      - omsk
+      - moscow
+      - saint-p
+      - orlando
+      - seattle
+      - springfield

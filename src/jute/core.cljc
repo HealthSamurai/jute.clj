@@ -159,6 +159,33 @@ string-literal
                 (fn [item] (eval-node compiled-body (assoc scope var-name item))))
               coll)))))
 
+(defn- compile-reduce-directive [node options]
+  (let [compiled-reduce (compile* (:$reduce node) options)
+        [acc-name alias] (:$as node)
+        compiled-start (compile* (:$start node) options)
+        compiled-body (compile* (:$body node) options)]
+
+    (when (or (nil? acc-name) (nil? alias))
+      (let [err "Please provide $as attribute (array) for an $reduce directive"]
+        (throw #?(:clj (IllegalArgumentException. err)
+                  :cljs (js/Error. err)))))
+
+    (let [acc-name (keyword acc-name)
+          alias (keyword alias)]
+      (fn [scope]
+        (let [coll (eval-node compiled-reduce scope)
+              start (eval-node compiled-start scope)]
+          (reduce (if (map? coll)
+                    (fn [acc [k v]]
+                      (eval-node compiled-body
+                                 (assoc scope alias {:key k :value v}
+                                        acc-name acc)))
+
+                    (fn [acc item]
+                      (eval-node compiled-body
+                                 (assoc scope alias item acc-name acc))))
+                  start coll))))))
+
 (defn- compile-if [node options]
   (let [compiled-if (compile* (:$if node) options)
         compiled-then (if (contains? node :$then)
@@ -226,6 +253,7 @@ string-literal
   {:$if compile-if
    :$let compile-let
    :$map compile-map-directive
+   :$reduce compile-reduce-directive
    :$call compile-call-directive
    :$switch compile-switch-directive
    :$fn compile-fn-directive})

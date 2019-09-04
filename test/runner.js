@@ -11,6 +11,7 @@ const specFiles = [
   "special_options.yml",
   "switch_directive.yml",
   "map_directive.yml",
+  "reduce_directive.yml",
   "expressions.yml"
 ];
 
