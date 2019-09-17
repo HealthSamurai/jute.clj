@@ -447,6 +447,8 @@ To be written.
 
 ### joinStr(separator, strArray)
 
+### splitStr(srt, regexp, limit?)
+
 ### substr(str, start, end)
 
 ### concat(arrays...)
