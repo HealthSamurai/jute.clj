@@ -19,6 +19,7 @@
 (def standard-fns
   {:join str/join       ;; deprecated
    :joinStr str/join
+   :splitStr (fn [s re & [limit]] (str/split s (re-pattern re) (or limit 0)))
    :substring subs      ;; deprecated
    :substr    subs
    :concat concat
@@ -109,6 +110,8 @@ path
 <path-head>
   = #'[a-zA-Z_][a-zA-Z_0-9]*'
   | '@'
+  | parens-expr
+  | fn-call
 
 <path-component>
   = #'[a-zA-Z_0-9]+'
@@ -398,7 +401,7 @@ string-literal
       (vals v)
       nil)))
 
-(defn- compile-path-component [cmp]
+(defn- compile-path-component [cmp idx]
   (cond
     (string? cmp) (if (re-matches #"^\d+$" cmp)
                     #?(:clj (read-string cmp)
@@ -419,22 +422,32 @@ string-literal
                                    (vec (filter #(compiled-pred (assoc scope :this %)) val)))
                                  true])
 
-        :else [(let [compiled-expr (compile-expression-ast cmp)]
-                 (fn [val scope is-multiple?]
-                   (let [result (compiled-expr scope)
-                         result (if (string? result) (keyword result) result)]
-                     (if is-multiple?
-                       (remove nil? (map #(get % result) val))
-                       (get val result)))))
-               false]))))
+        :else
+
+        (if (= 0 idx)
+          [(let [compiled-expr (compile-expression-ast cmp)]
+             (fn [val scope is-multiple?]
+               (compiled-expr scope)))
+           false]
+          [(let [compiled-expr (compile-expression-ast cmp)]
+             (fn [val scope is-multiple?]
+               (let [result (compiled-expr scope)
+                     result (if (string? result) (keyword result) result)]
+                 (if is-multiple?
+                   (remove nil? (map #(get % result) val))
+                   (get val result)))))
+           false])))))
+
+(def path-root (keyword "@"))
 
 (defn- compile-path [[_ & path-comps]]
-  (let [compiled-comps (mapv compile-path-component path-comps)
-        path-root (keyword "@")]
+  (let [compiled-comps (map-indexed (fn [idx itm] (compile-path-component itm idx))
+                                    path-comps)]
     (fn [scope]
       (loop [[cmp & tail] compiled-comps
              val scope
-             is-multiple? false]
+             is-multiple? false
+             idx 0]
         (let [next-val
               (if (= path-root cmp)
                 val
@@ -450,7 +463,8 @@ string-literal
             next-val
             (recur tail next-val (or is-multiple?
                                      (and (vector? cmp)
-                                          (second cmp))))))))))
+                                          (second cmp)))
+                   (inc idx))))))))
 
 (def expressions-compile-fns
   {:expr compile-expr-expr
@@ -533,3 +547,8 @@ string-literal
               :else n)]
 
     res))
+
+(comment
+  (expression-parser "splitStr(s, \" \").0" )
+
+  )

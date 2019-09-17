@@ -285,6 +285,15 @@ tests:
       result: it works
       result2: it works
 
+  - desc: expression can be used as a path component
+    scope:
+      s: "foo bar"
+
+    template:
+      result: $ splitStr(s, " ").0
+    result:
+      result: foo
+
   # - desc: boolean logic expressions are evaluated properly
   #   scope:
   #     foo: 2

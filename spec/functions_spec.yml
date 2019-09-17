@@ -1,0 +1,32 @@
+---
+suite: JUTE built-in functions
+tests:
+  - desc: splitStr
+
+    scope:
+      s: "foo bar baz"
+    template:
+      first: $ splitStr(s, " +")
+
+    result:
+      first: ["foo", "bar", "baz"]
+
+  - desc: splitStr with limit = 0
+
+    scope:
+      s: "foo bar baz"
+    template:
+      first: $ splitStr(s, " +", 0)
+
+    result:
+      first: ["foo", "bar", "baz"]
+
+  - desc: splitStr with limit != 0
+
+    scope:
+      s: "foo bar baz"
+    template:
+      first: $ splitStr(s, " +", 2)
+
+    result:
+      first: ["foo", "bar baz"]

@@ -68,6 +68,12 @@
       (testing desc
         (is (= result ((compile template) scope)))))))
 
+(deftest functions-test
+  (let [suite (yaml/from-file "spec/functions_spec.yml" true)]
+    (doseq [{:keys [desc scope template result]} (:tests suite)]
+      (testing desc
+        (is (= result ((compile template) scope)))))))
+
 (deftest documentation-examples-test
   (testing "The first example from README.md"
     (let [template {:type "book"
