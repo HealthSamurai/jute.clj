@@ -378,7 +378,7 @@ string-literal
       (fn [scope] (f (eval-node operand scope))))))
 
 (defn- compile-num-literal [ast]
-  #?(:clj (read-string (apply str (rest ast)))
+  #?(:clj (java.lang.Long/parseLong (apply str (rest ast)))
      :cljs (js/parseFloat (apply str (rest ast)))))
 
 (defn- compile-null-literal [ast]
@@ -400,7 +400,7 @@ string-literal
 (defn- compile-path-component [cmp idx]
   (cond
     (string? cmp) (if (re-matches #"^\d+$" cmp)
-                    #?(:clj (read-string cmp)
+                    #?(:clj (java.lang.Long/parseLong cmp)
                        :cljs (js/parseInt cmp))
 
                     (keyword cmp))
@@ -538,7 +538,3 @@ string-literal
 
     res))
 
-(comment
-  (expression-parser "splitStr(s, \" \").0" )
-
-  )
