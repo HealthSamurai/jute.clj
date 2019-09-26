@@ -154,10 +154,10 @@ string-literal
 (defn- eval-node [n scope]
   (if (fn? n) (n scope) n))
 
-(defn- compile-map-directive [node options]
-  (let [compiled-map (compile* (:$map node) options)
+(defn- compile-map-directive [node options path]
+  (let [compiled-map (compile* (:$map node) options (conj path :$map))
         var-name (keyword (or (:$as node) "this"))
-        compiled-body (compile* (:$body node) options)]
+        compiled-body (compile* (:$body node) options (conj path :$body))]
 
     (fn [scope]
       (let [coll (eval-node compiled-map scope)]
@@ -166,11 +166,11 @@ string-literal
                 (fn [item] (eval-node compiled-body (assoc scope var-name item))))
               coll)))))
 
-(defn- compile-reduce-directive [node options]
-  (let [compiled-reduce (compile* (:$reduce node) options)
+(defn- compile-reduce-directive [node options path]
+  (let [compiled-reduce (compile* (:$reduce node) options (conj path :$reduce))
         [acc-name alias] (:$as node)
-        compiled-start (compile* (:$start node) options)
-        compiled-body (compile* (:$body node) options)]
+        compiled-start (compile* (:$start node) options (conj path :$start))
+        compiled-body (compile* (:$body node) options (conj path :$body))]
 
     (when (or (nil? acc-name) (nil? alias))
       (raise "Please provide $as attribute (array) for an $reduce directive"))
@@ -191,12 +191,12 @@ string-literal
                                  (assoc scope alias item acc-name acc))))
                   start coll))))))
 
-(defn- compile-if [node options]
-  (let [compiled-if (compile* (:$if node) options)
+(defn- compile-if-directive [node options path]
+  (let [compiled-if (compile* (:$if node) options (conj path :$if))
         compiled-then (if (contains? node :$then)
-                        (compile* (:$then node) options)
-                        (compile* (dissoc node :$if :$else) options))
-        compiled-else (compile* (:$else node) options)]
+                        (compile* (:$then node) options (conj path :$then))
+                        (compile* (dissoc node :$if :$else) options path))
+        compiled-else (compile* (:$else node) options (conj path :$else))]
 
     (if (fn? compiled-if)
       (fn [scope]
@@ -208,14 +208,19 @@ string-literal
         (fn [scope] (eval-node compiled-then scope))
         (fn [scope] (eval-node compiled-else scope))))))
 
-(defn- compile-let [node options]
+(defn- compile-let-directive [node options path]
   (let [lets (:$let node)
-        compiled-locals (mapv (fn [[k v]] [k (compile* v options)])
-                              (if (vector? lets)
-                                (mapv (fn [i] [(first (keys i)) (first (vals i))]) lets)
-                                (mapv (fn [[k v]] [k v]) lets)))
+        compiled-locals (if (sequential? lets)
+                          (map-indexed (fn [idx item]
+                                         (let [k (first (keys item))
+                                               v (get item k)]
+                                           [k (compile* v options (into path [:$let idx k]))]))
+                                       lets)
+                          (map (fn [[k v]]
+                                 [k (compile* v options (into path [:$let k]))])
+                               lets))
 
-        compiled-body (compile* (:$body node) options)]
+        compiled-body (compile* (:$body node) options (conj path :$body))]
 
     (fn [scope]
       (let [new-scope (reduce (fn [acc [n v]]
@@ -223,26 +228,27 @@ string-literal
                               scope compiled-locals)]
         (eval-node compiled-body new-scope)))))
 
-(defn- compile-fn-directive [node options]
+(defn- compile-fn-directive [node options path]
   (let [arg-names (map keyword (:$fn node))
-        compiled-body (compile* (:$body node) options)]
+        compiled-body (compile* (:$body node) options (conj path :$body))]
 
     (fn [scope]
       (fn [& args]
         (let [new-scope (merge scope (zipmap arg-names args))]
           (eval-node compiled-body new-scope))))))
 
-(defn- compile-switch-directive [node options]
-  (let [compiled-node (reduce-kv (fn [m k v] (assoc m k (compile* v options))) {} node)]
+(defn- compile-switch-directive [node options path]
+  (let [compiled-node (reduce-kv (fn [m k v] (assoc m k (compile* v options (conj path k))))
+                                 {} node)]
 
     (fn [scope]
       (let [v (eval-node (:$switch compiled-node) scope)
             v-kw (keyword (str v))]
         (eval-node (get compiled-node v-kw (:$default compiled-node)) scope)))))
 
-(defn- compile-call-directive [node options]
+(defn- compile-call-directive [node options path]
   (let [fn-name (keyword (:$call node))
-        args (compile* (:$args node) options)]
+        args (compile* (:$args node) options (conj path :$call))]
 
     (fn [scope]
       (if-let [fun (or (and (fn? (get scope fn-name)) (get scope fn-name))
@@ -253,15 +259,15 @@ string-literal
         (raise (str "Cannot find function " fn-name " in the current scope"))))))
 
 (def directives
-  {:$if compile-if
-   :$let compile-let
+  {:$if compile-if-directive
+   :$let compile-let-directive
    :$map compile-map-directive
    :$reduce compile-reduce-directive
    :$call compile-call-directive
    :$switch compile-switch-directive
    :$fn compile-fn-directive})
 
-(defn- compile-map [node options]
+(defn- compile-map [node options path]
   (let [directives (merge directives (:directives options))
         directive-keys (cset/intersection (set (keys node))
                                           (set (keys directives)))]
@@ -273,7 +279,7 @@ string-literal
 
     (if (empty? directive-keys)
       (let [result (reduce (fn [acc [key val]]
-                             (let [compiled-val (compile* val options)]
+                             (let [compiled-val (compile* val options (conj path key))]
                                (-> acc
                                    (assoc-in [:result key] compiled-val)
                                    (assoc :dynamic? (or (:dynamic? acc) (fn? compiled-val))))))
@@ -298,10 +304,10 @@ string-literal
 
           (:result result)))
 
-      ((get directives (first directive-keys)) node options))))
+      ((get directives (first directive-keys)) node options path))))
 
-(defn- compile-vector [node options]
-  (let [result (mapv #(compile* % options) node)]
+(defn- compile-vector [node options path]
+  (let [result (map-indexed (fn [idx item] (compile* item options (conj path idx))) node)]
     (if (some fn? result)
       (fn [scope]
         (mapv #(eval-node % scope) result))
@@ -378,7 +384,7 @@ string-literal
       (fn [scope] (f (eval-node operand scope))))))
 
 (defn- compile-num-literal [ast]
-  #?(:clj (java.lang.Long/parseLong (apply str (rest ast)))
+  #?(:clj (read-string (apply str (rest ast)))
      :cljs (js/parseFloat (apply str (rest ast)))))
 
 (defn- compile-null-literal [ast]
@@ -483,37 +489,37 @@ string-literal
     (compile-fn ast)
     (raise (str "Cannot find compile function for node " ast))))
 
-(defn failure? [x]
+(defn- check-for-parsing-failure? [x]
   (if (insta/failure? x)
     (raise (pr-str (insta/get-failure x)))
     x))
 
-(defn- compile-string [node options]
+(defn- compile-string [node options path]
   (if (.startsWith node "$fp")
     (raise "Fhirpath expressions are not supported yet")
-    
+
     (if (.startsWith node "$")
       (-> node
           (expression-parser)
-          failure?
+          (check-for-parsing-failure?)
           (first)
           (compile-expression-ast))
 
       node)))
 
-(defn compile* [node options]
+(defn compile* [node options path]
   (cond
     (nil? node)     nil
-    (map? node)     (compile-map node options)
-    (string? node)  (compile-string node options)
-    (seqable? node) (compile-vector node options)
+    (map? node)        (compile-map node options path)
+    (string? node)     (compile-string node options path)
+    (sequential? node) (compile-vector node options path)
     :else node))
 
 (defn compile
   "Compiles JUTE template into invocabe function."
   [node & [options]]
 
-  (let [result (compile* node (or options {}))]
+  (let [result (compile* node (or options {}) [])]
     (if (fn? result)
       result
       (constantly result))))
@@ -537,4 +543,3 @@ string-literal
               :else n)]
 
     res))
-
