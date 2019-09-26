@@ -16,6 +16,10 @@
       (catch #?(:clj Exception :cljs js/Object) e nil))
     v))
 
+(defn raise [msg]
+  (throw #?(:clj (RuntimeException. msg)
+            :cljs (js/Error. msg))))
+
 (def standard-fns
   {:join str/join       ;; deprecated
    :joinStr str/join
@@ -169,9 +173,7 @@ string-literal
         compiled-body (compile* (:$body node) options)]
 
     (when (or (nil? acc-name) (nil? alias))
-      (let [err "Please provide $as attribute (array) for an $reduce directive"]
-        (throw #?(:clj (IllegalArgumentException. err)
-                  :cljs (js/Error. err)))))
+      (raise "Please provide $as attribute (array) for an $reduce directive"))
 
     (let [acc-name (keyword acc-name)
           alias (keyword alias)]
@@ -248,9 +250,7 @@ string-literal
         (let [arg-values (eval-node args scope)]
           (apply fun arg-values))
 
-        (let [err (str "Cannot find function " fn-name " in the current scope")]
-          (throw #?(:clj (IllegalArgumentException. err)
-                    :cljs (js/Error. err))))))))
+        (raise (str "Cannot find function " fn-name " in the current scope"))))))
 
 (def directives
   {:$if compile-if
@@ -266,12 +266,10 @@ string-literal
         directive-keys (cset/intersection (set (keys node))
                                           (set (keys directives)))]
     (when (> (count directive-keys) 1)
-      (let [err (str "More than one directive found in the node "
-                     (pr-str node)
-                     ". Found following directive keys: "
-                     (pr-str directive-keys))]
-        (throw #?(:clj (IllegalArgumentException. err)
-                  :cljs (js/Error. err)))))
+      (raise (str "More than one directive found in the node "
+                  (pr-str node)
+                  ". Found following directive keys: "
+                  (pr-str directive-keys))))
 
     (if (empty? directive-keys)
       (let [result (reduce (fn [acc [key val]]
@@ -339,9 +337,7 @@ string-literal
           (fn [scope] (f (eval-node compiled-left scope) (eval-node compiled-right scope)))
           (f compiled-left compiled-right)))
 
-      (let [err (str "Cannot guess operator for: " op)]
-        (throw #?(:clj (RuntimeException. err)
-                  :cljs (js/Error. err)))))
+      (raise (str "Cannot guess operator for: " op)))
 
     (compile-expression-ast left)))
 
@@ -485,23 +481,17 @@ string-literal
 (defn- compile-expression-ast [ast]
   (if-let [compile-fn (get expressions-compile-fns (first ast))]
     (compile-fn ast)
-    (let [err (str "Cannot find compile function for node " ast)]
-      (throw #?(:clj (RuntimeException. err)
-                :cljs (js/Error. err))))))
+    (raise (str "Cannot find compile function for node " ast))))
 
 (defn failure? [x]
   (if (insta/failure? x)
-    (let [err (pr-str (insta/get-failure x))]
-      (throw #?(:clj (RuntimeException. err)
-                :cljs (js/Error. err))))
+    (raise (pr-str (insta/get-failure x)))
     x))
 
 (defn- compile-string [node options]
   (if (.startsWith node "$fp")
-    ;; (fhirpath/compile (subs node 3))
-    (throw #?(:clj (RuntimeException. "Fhirpath expressions are not supported yet")
-              :cljs (js/Error. "Fhirpath expressions are not supported yet")))
-
+    (raise "Fhirpath expressions are not supported yet")
+    
     (if (.startsWith node "$")
       (-> node
           (expression-parser)
