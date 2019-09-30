@@ -126,3 +126,42 @@
                                       :$else "$ toString(num) + \"-\" + s"}}}]}]
       (is (= "0-FizzBuzz 1 2 3-Fizz 4 5-Buzz 6-Fizz 7 8 9-Fizz 10-Buzz 11 12-Fizz 13 14 15-FizzBuzz 16 17 18-Fizz 19 20-Buzz 21-Fizz 22 23 24-Fizz 25-Buzz 26 27-Fizz 28 29 30-FizzBuzz 31 32 33-Fizz 34 35-Buzz 36-Fizz 37 38 39-Fizz 40-Buzz 41 42-Fizz 43 44 45-FizzBuzz 46 47 48-Fizz 49"
              ((compile t) {}))))))
+
+
+(deftest compilation-exceptions-test
+  (testing "Reports template path where compilation failed"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"While compiling JUTE template at @.foo.0"
+                          (compile {:foo ["$ 30c"]})))
+
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"While compiling JUTE template at @.\$then"
+                          (compile {:$if "$ a"
+                                    :$then "$ 42b"
+                                    :$else false})))
+
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"While compiling JUTE template at @.\$if"
+                          (compile {:$if "$ 3 / 0"
+                                    :$then 42
+                                    :$else false}))))
+
+  (testing "Provides in exception information"
+    (try
+      (compile {:$if "$ a"
+                :$then "$ 42b"
+                :$else false})
+
+      (catch clojure.lang.ExceptionInfo e
+        (is (= [(keyword "@") :$then] (:path (.getData e))))
+        (is (= "@.$then" (:path-str (.getData e))))))))
+
+(deftest evaluation-exceptions-test
+  (testing "Reports template path where evaluation failed"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"While evaluating JUTE template at @.\$body"
+                          ((compile {:$map "$ a"
+                                     :$as "i"
+                                     :$body "$ b / 0"}) {:a [1] :b 1}))))
+
+  (testing "Expressions thrown in JUTE functions reports correct path"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"While evaluating JUTE template at @.\$let.f.\$body"
+                          ((compile {:$let {:f {:$fn [:a]
+                                                :$body "$ a / 0"}}
+                                     :$body {:b "$ f(a)"}}) {:a 1})))))

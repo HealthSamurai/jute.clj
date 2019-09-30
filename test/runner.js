@@ -33,3 +33,33 @@ specFiles.forEach((f) => {
     t.done();
   });
 });
+
+
+tap.test("Exceptions", t => {
+  t.test("reports template path where compilation failed", t => {
+    t.throws(() => {
+      jute.compile({foo: ["$ 30c"]}, {});
+    }, {
+      message: "While compiling JUTE template at @.foo.0",
+      path: ["@", "foo", 0]
+    });
+
+    t.done();
+  });
+
+  t.test("reports template path where evaluation failed", t => {
+    t.throws(() => {
+      const t = jute.compile({foo: ["$ foo(a)"]}, {});
+      t({a: 0});
+    }, {
+      message: "While evaluating JUTE template at @.foo.0",
+      path: ["@", "foo", 0],
+      pathStr: "@.foo.0"
+    });
+
+    t.done();
+  });
+
+
+  t.done();
+});
