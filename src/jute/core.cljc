@@ -24,7 +24,7 @@
 (defn- path-to-string [path]
   (str/join "." (map #(if (keyword? %) (name %) (str %)) path)))
 
-(defn- wrap-ex-with-path-and-rethrow [ex path msg-str]
+(defn wrap-ex-with-path-and-rethrow [ex path msg-str]
   (if #?(:clj (and (instance? clojure.lang.ExceptionInfo ex)
                    (get (.getData ex) :path))
          :cljs (and (aget ex "path") (aget ex "pathStr")))
