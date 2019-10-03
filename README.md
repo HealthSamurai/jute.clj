@@ -63,7 +63,7 @@ content:
 - Chapter 3
 ```
 
-Attentive reader will notice that we're going to discard preface and
+Here we're going to discard preface and
 afterwords as well as minor author information keepeing only his
 name. And we want a book's content to be an array of strings, not an
 array of objects with a `content` key. Let's write a JUTE template
