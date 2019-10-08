@@ -358,7 +358,7 @@ Performs conditional evaluation:
 
 ```yaml
 gender:
-  $if: $ sex == "m"
+  $if: $ sex = "m"
   $then: Male
   $else: Female
 ```
