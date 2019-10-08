@@ -24,7 +24,46 @@ relatively hard to write JSON by hands. That's why JUTE's primary
 format is [YAML](https://yaml.org/), which is much easier to read and
 write, thanks to its clean syntax and indentation-based nesting. Don't
 be confused with it, YAML and JSON are interchangeable, and there are
-even [online conversion tools](https://www.json2yaml.com/) beetween them.
+even [online conversion tools](https://www.json2yaml.com/) beetween them:
+
+<table>
+<thead>
+<tr><th>JSON</th><th>YAML</th></tr>
+</thead>
+<tbody>
+<tr><td>
+
+```yml
+{
+  "speaker": {
+    "login": "mlapshin",
+    "email": "mlapshin@health-samurai.io"
+  },
+  "fhir?": true,
+  "topics": [
+    "mapping",
+    "dsl",
+    "jute",
+    "fhir"
+  ]
+}
+```
+</td><td>
+
+```yml
+speaker:
+  login: mlapshin
+  email: mlapshin@health-samurai.io
+fhir?: true
+topics:
+  - mapping
+  - dsl
+  - jute
+  - fhir
+```
+</td></tr>
+</tbody>
+</table>
 
 # Quickstart Tutorial
 
