@@ -24,3 +24,11 @@ cache:
     - $HOME/.gitlibs
     - $TRAVIS_BUILD_DIR/test/node_modules
     - .cpcache
+
+deploy:
+  provider: gcs
+  access_key_id: "GOOG1EXAFULAKIVE2XMHCT2R6AUQM5JQYCDOTJCGQYHQ3PL6UAREPLNNKVUQA"
+  bucket: "jute-demo-site"
+  skip_cleanup: true
+  acl: public-read
+  local-dir: demo

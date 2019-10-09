@@ -15,3 +15,4 @@ target
 /js
 /test/node_modules
 /test/.nyc_output
+demo/jute.js

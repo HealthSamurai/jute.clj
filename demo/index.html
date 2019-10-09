@@ -1,0 +1,68 @@
+<!doctype html>
+
+<html>
+  <head>
+    <title>CodeMirror: YAML mode</title>
+    <meta charset="utf-8"/>
+    <link rel=stylesheet href="../../doc/docs.css">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/codemirror.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/mode/yaml/yaml.min.js"></script>
+    <style media="screen">
+      article {
+          display: flex;
+          align-items: stretch;
+          position: absolute;
+          left: 0;
+          top: 5em;
+          bottom: 0;
+          right: 0;
+      }
+
+      .CodeMirror {
+          height: 100%;
+          display: block;
+      }
+
+      article .cmWrap {
+          position: relative;
+          border: 1px solid red;
+          width: 33.333%;
+      }
+
+      article > * {
+          flex: 1 100%;
+          height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>JUTE Demo</h2>
+    <article>
+      <div class="cmWrap">
+        <textarea id="code">
+          foo
+          bar
+          baz
+        </textarea>
+      </div>
+
+      <div class="cmWrap">
+        <textarea id="data">
+        </textarea>
+      </div>
+
+      <div class="cmWrap">
+        <textarea id="result">
+        </textarea>
+      </div>
+    </article>
+
+    <script>
+      var codeEditor = CodeMirror.fromTextArea(document.getElementById("code"), {});
+      var dataEditor = CodeMirror.fromTextArea(document.getElementById("data"), {});
+      var resultsEditor = CodeMirror.fromTextArea(document.getElementById("result"), {});
+    </script>
+  </body>
+</html>

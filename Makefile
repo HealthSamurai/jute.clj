@@ -6,15 +6,20 @@ repl:
 test:
 	clojure -A:test:runner
 
-js:
+js/jute.js:
 	clojure -A:cljs -m cljs.main --optimizations advanced \
 				--target nodejs --output-to "js/jute.js" --output-dir "js" -c jute.js
 
-jstest:
+jstest: js/jute.js
 	node --version && cd test && `npm bin`/tap --no-coverage runner.js
+
+js: js/jute.js
 
 jar:
 	clojure -A:jar
 
 clojars-push: 
 	clojure -A:deploy
+
+demo-deploy: js/jute.js
+	cp js/jute.js demo/jute.js
