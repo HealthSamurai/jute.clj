@@ -21,5 +21,5 @@ jar:
 clojars-push: 
 	clojure -A:deploy
 
-demo-deploy: js/jute.js
+demo: js/jute.js
 	cp js/jute.js demo/jute.js
