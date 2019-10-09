@@ -29,4 +29,4 @@ deploy:
   bucket: jute-demo-site
   skip_cleanup: true
   acl: public-read
-  local-dir: demo
+  local_dir: demo
