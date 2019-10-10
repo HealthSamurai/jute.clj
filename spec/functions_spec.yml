@@ -30,3 +30,14 @@ tests:
 
     result:
       first: ["foo", "bar baz"]
+
+  - desc: daysInMonth
+
+    scope: null
+    template:
+      a: $ daysInMonth(2000, 2)
+      b: $ daysInMonth(1999, 2)
+
+    result:
+      a: 29
+      b: 28

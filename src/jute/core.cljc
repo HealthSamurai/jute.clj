@@ -4,7 +4,9 @@
             [instaparse.core :as insta]
             [clojure.string :as str])
   #?(:cljs (:require-macros [jute.core :refer [defn-compile eval-fn if-cljs]]))
-  #?(:clj (:gen-class)))
+  #?(:clj
+     (:gen-class)
+     (:import java.time.YearTime)))
 
 (defn- to-string [v]
   (if (keyword? v) (name v) (str v)))
@@ -81,6 +83,10 @@
          (catch Exception e#
            (wrap-ex-with-path-and-rethrow e# ~path "\nWhile evaluating JUTE template at "))))))
 
+(defn get-days-in-month [year month]
+  #?(:cljs (.getDate (js/Date. year month 0))
+     :clj (.lengthOfMonth (java.time.YearMonth/of year month))))
+
 (def standard-fns
   {:join str/join       ;; deprecated
    :joinStr str/join
@@ -107,6 +113,9 @@
                   :cljs (new js/Date)))
    :groupBy group-by
    :len count
+
+   :daysInMonth get-days-in-month
+
    :println println})
 
 ;; operator precedence:
