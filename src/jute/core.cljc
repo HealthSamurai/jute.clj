@@ -4,9 +4,8 @@
             [instaparse.core :as insta]
             [clojure.string :as str])
   #?(:cljs (:require-macros [jute.core :refer [defn-compile eval-fn if-cljs]]))
-  #?(:clj
-     (:gen-class)
-     (:import java.time.YearTime)))
+  #?(:clj (:gen-class))
+  #?(:clj (:import java.time.YearMonth)))
 
 (defn- to-string [v]
   (if (keyword? v) (name v) (str v)))
