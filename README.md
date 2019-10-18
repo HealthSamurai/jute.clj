@@ -397,7 +397,17 @@ funnyStuff:
   $body: $ item * 2
 ```
 
-TODO: we need to have an index among with element itself.
+Alternatively `$as` field can be an array of two elements, the first
+is a name of a variable for the current item and the second is a name
+for a variable containing item index:
+
+```yaml
+funnyStuff:
+  $map: $ people
+  $as: [guy, idx]
+  $body: $ "hello, " + idx
+```
+
 
 ### $reduce
 

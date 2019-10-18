@@ -18,7 +18,6 @@
   {:extra-deps {deps-deploy {:mvn/version "RELEASE"}}
    :main-opts ["-m" "deps-deploy.deps-deploy" "deploy" "target/jute-0.1.0-SNAPSHOT.jar"]}
 
-
   :cljs
   {:extra-deps
    {org.clojure/clojurescript     {:mvn/version "1.10.520"}}}

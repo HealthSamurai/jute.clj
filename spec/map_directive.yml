@@ -20,6 +20,25 @@ tests:
       - "hello, John"
       - "hello, Nick"
 
+  - desc: provides a way to get an index of current item
+
+    scope:
+      names:
+        - "Bob"
+        - "John"
+        - "Nick"
+
+    template:
+      $map: $ names
+      $as: [name, idx]
+      $body: $ "hello, " + name + " - " + idx
+
+    result:
+      - "hello, Bob - 0"
+      - "hello, John - 1"
+      - "hello, Nick - 2"
+
+
   - desc: works for objects too
     scope:
       items:

@@ -225,15 +225,27 @@ string-literal
 
 (defn-compile compile-map-directive [node options path]
   (let [compiled-map (compile* (:$map node) options (conj path :$map))
-        var-name (keyword (or (:$as node) "this"))
-        compiled-body (compile* (:$body node) options (conj path :$body))]
+        as (get node :$as "this")
+        var-name (keyword (if (string? as) as (first as)))
+        idx-name (if (sequential? as) (keyword (second as)) nil)
+        compiled-body (compile* (:$body node) options (conj path :$body))
+        update-scope (fn [scope v idx]
+                       (let [scope (assoc scope var-name v)]
+                         (if idx-name
+                           (assoc scope idx-name idx)
+                           scope)))]
 
     (eval-fn path [scope]
              (let [coll (eval-node compiled-map scope)]
-               (mapv (if (map? coll)
-                       (fn [[k v]] (eval-node compiled-body (assoc scope var-name {:key k :value v})))
-                       (fn [item] (eval-node compiled-body (assoc scope var-name item))))
-                     coll)))))
+               (vec (map-indexed (if (map? coll)
+                                   (fn [idx [k v]]
+                                     (eval-node compiled-body
+                                                (update-scope scope {:key k :value v} idx)))
+
+                                   (fn [idx item]
+                                     (eval-node compiled-body
+                                                (update-scope scope item idx))))
+                                 coll))))))
 
 (defn-compile compile-reduce-directive [node options path]
   (let [compiled-reduce (compile* (:$reduce node) options (conj path :$reduce))
