@@ -182,7 +182,8 @@ path
 <path-head>
   = #'[a-zA-Z_][a-zA-Z_0-9]*'
   | '@'
-  | expr
+  | fn-call
+  | parens-expr
 
 <path-component>
   = #'[a-zA-Z_0-9]+'
@@ -633,3 +634,5 @@ string-literal
               :else n)]
 
     res))
+
+
