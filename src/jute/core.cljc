@@ -166,10 +166,10 @@ unary-expr
   = ('+' | '-' | '!') expr | terminal-expr
 
 <terminal-expr>
-  = bool-literal / num-literal / string-literal / null-literal/ fn-call / path / parens-expr
+  = bool-literal / num-literal / string-literal / null-literal / path / fn-call / parens-expr
 
 fn-call
-  = #'[a-zA-Z_]+' <'('> fn-call-args <')'>
+  = path <'('> fn-call-args <')'>
 
 <fn-call-args>
   = (expr (<','> expr) *)?
@@ -178,13 +178,11 @@ fn-call
 
 path
   = path-head (<'.'> path-component)*
-  | parens-expr (<'.'> path-component)+
 
 <path-head>
   = #'[a-zA-Z_][a-zA-Z_0-9]*'
   | '@'
-  | parens-expr
-  | fn-call
+  | expr
 
 <path-component>
   = #'[a-zA-Z_0-9]+'
@@ -430,13 +428,15 @@ string-literal
 
     (compile-expression-ast left options path)))
 
-(defn-compile compile-fn-call [[_ fn-name & args] options path]
+(declare compile-path)
+(defn-compile compile-fn-call [[_ fn-path & args] options path]
   (let [compiled-args (mapv #(compile-expression-ast % options path) args)
-        f (get standard-fns (keyword fn-name))]
+        compiled-fn-path (compile-path fn-path options path)]
     (eval-fn path [scope]
-             (let [f (or f (get scope (keyword fn-name)))]
+             (let [f (or (compiled-fn-path standard-fns)
+                         (compiled-fn-path scope))]
                (when (or (nil? f) (not (fn? f)))
-                 (raise (str "Unknown function: " fn-name)))
+                 (raise (str "Attempt to call nil or non-function: " (pr-str fn-path))))
 
                (apply f (mapv #(eval-node % scope) compiled-args))))))
 
