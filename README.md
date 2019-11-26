@@ -518,6 +518,8 @@ To be written.
 
 ### range(begin, end, step)
 
+### flatten(array)
+
 # License
 
 Copyright © 2019 Health Samurai Team

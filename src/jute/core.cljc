@@ -94,6 +94,7 @@
    :substr    subs
    :concat concat
    :merge merge
+   :flatten flatten
    :str to-string
    :range range
    :toString to-string
