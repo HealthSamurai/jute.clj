@@ -96,7 +96,8 @@
    :merge merge
    :flatten flatten
    :assoc assoc
-   :abs Math/abs
+   :abs (fn [i] #?(:clj (java.lang.Math/abs i)
+                   :cljs (Math/abs i)))
    :str to-string
    :range range
    :toString to-string
