@@ -96,6 +96,7 @@
    :merge merge
    :flatten flatten
    :assoc assoc
+   :abs Math/abs
    :str to-string
    :range range
    :toString to-string

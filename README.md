@@ -522,6 +522,8 @@ To be written.
 
 ### assoc(object, key, value, ...)
 
+### abs(signed int)
+
 # License
 
 Copyright © 2019 Health Samurai Team
