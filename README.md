@@ -520,6 +520,8 @@ To be written.
 
 ### flatten(array)
 
+### assoc(object, key, value, ...)
+
 # License
 
 Copyright © 2019 Health Samurai Team
