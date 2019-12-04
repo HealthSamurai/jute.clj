@@ -122,6 +122,7 @@
    :str to-string
    :range range
    :toString to-string
+   :keyword keyword
    :hash hash
    :toInt (fn [v] (if (string? v)
                     (try
