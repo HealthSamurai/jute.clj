@@ -524,6 +524,8 @@ To be written.
 
 ### abs(signed int)
 
+### dropBlanks(any)
+
 # License
 
 Copyright © 2019 Health Samurai Team

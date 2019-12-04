@@ -10,6 +10,26 @@
 (defn- to-string [v]
   (if (keyword? v) (name v) (str v)))
 
+(defn drop-blanks [n]
+  (let [res (cond
+              (and (string? n) (str/blank? n)) nil
+              (map? n)
+              (let [nn (reduce (fn [acc [k v]]
+                                 (let [nv (drop-blanks v)]
+                                   (if (nil? nv)
+                                     acc
+                                     (assoc acc k nv))))
+                               {} n)]
+                (if (empty? nn) nil nn))
+
+              (sequential? n)
+              (let [nn (remove nil? (map drop-blanks n))]
+                (if (empty? nn) nil nn))
+
+              :else n)]
+
+    res))
+
 (defn- to-decimal [v]
   (if (string? v)
     (try
@@ -98,6 +118,7 @@
    :assoc assoc
    :abs (fn [i] #?(:clj (java.lang.Math/abs i)
                    :cljs (Math/abs i)))
+   :dropBlanks drop-blanks 
    :str to-string
    :range range
    :toString to-string
@@ -618,25 +639,4 @@ string-literal
     (if (fn? result)
       result
       (constantly result))))
-
-(defn drop-blanks [n]
-  (let [res (cond
-              (and (string? n) (str/blank? n)) nil
-              (map? n)
-              (let [nn (reduce (fn [acc [k v]]
-                                 (let [nv (drop-blanks v)]
-                                   (if (nil? nv)
-                                     acc
-                                     (assoc acc k nv))))
-                               {} n)]
-                (if (empty? nn) nil nn))
-
-              (sequential? n)
-              (let [nn (remove nil? (map drop-blanks n))]
-                (if (empty? nn) nil nn))
-
-              :else n)]
-
-    res))
-
 

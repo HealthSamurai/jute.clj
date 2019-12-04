@@ -41,3 +41,21 @@ tests:
     result:
       a: 29
       b: 28
+
+  - desc: dropBlanks
+    scope:
+      a: [null, null, 3]
+      b:
+        foo: null
+        bar: 12
+        baz: [{foo: null}, 42]
+
+    template:
+      a: $ dropBlanks(a)
+      b: $ dropBlanks(b)
+
+    result:
+      a: [3]
+      b:
+        bar: 12
+        baz: [42]
