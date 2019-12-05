@@ -159,60 +159,62 @@ content:
     </article>
 
     <script>
-      var codeEditor = null;
-      var dataEditor = null;
-      var resultsEditor = null;
+      document.addEventListener("DOMContentLoaded", function(event) {
+        var codeEditor = null;
+        var dataEditor = null;
+        var resultsEditor = null;
 
-      function evalJute() {
-        var code = codeEditor.getValue();
-        var data = dataEditor.getValue();
-        var result = null;
+        function evalJute() {
+          var code = codeEditor.getValue();
+          var data = dataEditor.getValue();
+          var result = null;
 
-        try {
-          var codeYaml = jsyaml.safeLoad(code);
-          var dataYaml = jsyaml.safeLoad(data);
-          var tpl = jute.js.compile(codeYaml);
-          result = tpl(dataYaml);
-        } catch (e) {
-          console.log(">>> exception", e);
-          result = e;
+          try {
+            var codeYaml = jsyaml.safeLoad(code);
+            var dataYaml = jsyaml.safeLoad(data);
+            var tpl = jute.js.compile(codeYaml);
+            result = tpl(dataYaml);
+          } catch (e) {
+            console.log(">>> exception", e);
+            result = e;
+          }
+
+          resultsEditor.setValue(jsyaml.safeDump(result));
         }
-        
-        resultsEditor.setValue(jsyaml.safeDump(result));
-      }
 
-      function betterTab(cm) {
-        if (cm.somethingSelected()) {
-          cm.indentSelection("add");
-        } else {
-          cm.replaceSelection(cm.getOption("indentWithTabs")? "\t":
-                              Array(cm.getOption("indentUnit") + 1).join(" "), "end", "+input");
+        function betterTab(cm) {
+          if (cm.somethingSelected()) {
+            cm.indentSelection("add");
+          } else {
+            cm.replaceSelection(cm.getOption("indentWithTabs")? "\t":
+                                Array(cm.getOption("indentUnit") + 1).join(" "), "end", "+input");
+          }
         }
-      }
 
-      var cmOptions = {
-        lineNumbers: true,
-        mode: "text/x-yaml",
-        gutters: ["CodeMirror-lint-markers"],
-        lint: true,
-        indentUnit: 2,
-        indentWithTabs: false,
-        tabSize: 2,
-        extraKeys: { Tab: betterTab },
-        changes: evalJute
-      };
+        var cmOptions = {
+          lineNumbers: true,
+          mode: "text/x-yaml",
+          gutters: ["CodeMirror-lint-markers"],
+          lint: true,
+          indentUnit: 2,
+          indentWithTabs: false,
+          tabSize: 2,
+          extraKeys: { Tab: betterTab },
+          changes: evalJute
+        };
 
-      codeEditor = CodeMirror.fromTextArea(document.getElementById("code"), cmOptions);
-      dataEditor = CodeMirror.fromTextArea(document.getElementById("data"), cmOptions);
-      resultsEditor = CodeMirror.fromTextArea(document.getElementById("result"),
-                                              Object.assign({}, cmOptions, {
-                                                readOnly: true
-                                              }));
+        codeEditor = CodeMirror.fromTextArea(document.getElementById("code"), cmOptions);
+        dataEditor = CodeMirror.fromTextArea(document.getElementById("data"), cmOptions);
+        resultsEditor = CodeMirror.fromTextArea(document.getElementById("result"),
+                                                Object.assign({}, cmOptions, {
+                                                  readOnly: true
+                                                }));
 
-      codeEditor.on('changes', evalJute);
-      dataEditor.on('changes', evalJute);
+        codeEditor.on('changes', evalJute);
+        dataEditor.on('changes', evalJute);
 
-      evalJute();
+        evalJute();
+      });
     </script>
   </body>
 </html>
