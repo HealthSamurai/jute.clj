@@ -2,13 +2,19 @@
 
 <html>
   <head>
-    <title>CodeMirror: YAML mode</title>
+    <title>JUTE Demo</title>
     <meta charset="utf-8"/>
-    <link rel=stylesheet href="../../doc/docs.css">
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/codemirror.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/mode/yaml/yaml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/addon/lint/lint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/addon/lint/yaml-lint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/3.13.1/js-yaml.min.js"></script>
+
+    <!-- workaround for "global is not defined" error -->
+    <script type="text/javascript">global = window;</script>
+
+    <script src="jute.js"></script>
     <style media="screen">
       article {
           display: flex;
@@ -27,7 +33,7 @@
 
       article .cmWrap {
           position: relative;
-          border: 1px solid red;
+          border: 1px solid #000;
           width: 33.333%;
       }
 
@@ -35,34 +41,177 @@
           flex: 1 100%;
           height: 100%;
       }
+
+
+      /* LINTER STYLES */
+
+      .CodeMirror-lint-markers {
+          width: 16px;
+      }
+
+      .CodeMirror-lint-tooltip {
+          background-color: #ffd;
+          border: 1px solid black;
+          border-radius: 4px 4px 4px 4px;
+          color: black;
+          font-family: monospace;
+          font-size: 10pt;
+          overflow: hidden;
+          padding: 2px 5px;
+          position: fixed;
+          white-space: pre;
+          white-space: pre-wrap;
+          z-index: 100;
+          max-width: 600px;
+          opacity: 0;
+          transition: opacity .4s;
+          -moz-transition: opacity .4s;
+          -webkit-transition: opacity .4s;
+          -o-transition: opacity .4s;
+          -ms-transition: opacity .4s;
+      }
+
+      .CodeMirror-lint-mark-error, .CodeMirror-lint-mark-warning {
+          background-position: left bottom;
+          background-repeat: repeat-x;
+      }
+
+      .CodeMirror-lint-mark-error {
+          background-image:
+              url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAADCAYAAAC09K7GAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9sJDw4cOCW1/KIAAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAAHElEQVQI12NggIL/DAz/GdA5/xkY/qPKMDAwAADLZwf5rvm+LQAAAABJRU5ErkJggg==")
+          ;
+      }
+
+      .CodeMirror-lint-mark-warning {
+          background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAADCAYAAAC09K7GAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9sJFhQXEbhTg7YAAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAAMklEQVQI12NkgIIvJ3QXMjAwdDN+OaEbysDA4MPAwNDNwMCwiOHLCd1zX07o6kBVGQEAKBANtobskNMAAAAASUVORK5CYII=");
+      }
+
+      .CodeMirror-lint-marker-error, .CodeMirror-lint-marker-warning {
+          background-position: center center;
+          background-repeat: no-repeat;
+          cursor: pointer;
+          display: inline-block;
+          height: 16px;
+          width: 16px;
+          vertical-align: middle;
+          position: relative;
+      }
+
+      .CodeMirror-lint-message-error, .CodeMirror-lint-message-warning {
+          padding-left: 18px;
+          background-position: top left;
+          background-repeat: no-repeat;
+      }
+
+      .CodeMirror-lint-marker-error, .CodeMirror-lint-message-error {
+          background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAHlBMVEW7AAC7AACxAAC7AAC7AAAAAAC4AAC5AAD///+7AAAUdclpAAAABnRSTlMXnORSiwCK0ZKSAAAATUlEQVR42mWPOQ7AQAgDuQLx/z8csYRmPRIFIwRGnosRrpamvkKi0FTIiMASR3hhKW+hAN6/tIWhu9PDWiTGNEkTtIOucA5Oyr9ckPgAWm0GPBog6v4AAAAASUVORK5CYII=");
+      }
+
+      .CodeMirror-lint-marker-warning, .CodeMirror-lint-message-warning {
+          background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAANlBMVEX/uwDvrwD/uwD/uwD/uwD/uwD/uwD/uwD/uwD6twD/uwAAAADurwD2tQD7uAD+ugAAAAD/uwDhmeTRAAAADHRSTlMJ8mN1EYcbmiixgACm7WbuAAAAVklEQVR42n3PUQqAIBBFUU1LLc3u/jdbOJoW1P08DA9Gba8+YWJ6gNJoNYIBzAA2chBth5kLmG9YUoG0NHAUwFXwO9LuBQL1giCQb8gC9Oro2vp5rncCIY8L8uEx5ZkAAAAASUVORK5CYII=");
+      }
+
+      .CodeMirror-lint-marker-multiple {
+          background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAcAAAAHCAMAAADzjKfhAAAACVBMVEUAAAAAAAC/v7914kyHAAAAAXRSTlMAQObYZgAAACNJREFUeNo1ioEJAAAIwmz/H90iFFSGJgFMe3gaLZ0od+9/AQZ0ADosbYraAAAAAElFTkSuQmCC");
+          background-repeat: no-repeat;
+          background-position: right bottom;
+          width: 100%; height: 100%;
+      }
     </style>
   </head>
+
   <body>
     <h2>JUTE Demo</h2>
     <article>
       <div class="cmWrap">
-        <textarea id="code">
-          foo
-          bar
-          baz
-        </textarea>
+        <textarea id="code">type: book
+author: $ book.author.name
+title: $ book.title
+content: 
+  $map: $ book.chapters.*(this.type = "content")
+  $as: i
+  $body: $ i.content</textarea>
       </div>
 
       <div class="cmWrap">
-        <textarea id="data">
-        </textarea>
+        <textarea id="data">book:
+  author:
+    name: M. Soloviev
+    title: PHD
+    gender: m
+  title: Approach to Cockroach
+  chapters:
+  - type: preface
+    content: A preface chapter
+  - type: content
+    content: Chapter 1
+  - type: content
+    content: Chapter 2
+  - type: content
+    content: Chapter 3
+  - type: afterwords
+    content: Afterwords</textarea>
       </div>
 
       <div class="cmWrap">
-        <textarea id="result">
-        </textarea>
+        <textarea id="result"></textarea>
       </div>
     </article>
 
     <script>
-      var codeEditor = CodeMirror.fromTextArea(document.getElementById("code"), {});
-      var dataEditor = CodeMirror.fromTextArea(document.getElementById("data"), {});
-      var resultsEditor = CodeMirror.fromTextArea(document.getElementById("result"), {});
+      var codeEditor = null;
+      var dataEditor = null;
+      var resultsEditor = null;
+
+      function evalJute() {
+        var code = codeEditor.getValue();
+        var data = dataEditor.getValue();
+        var result = null;
+
+        try {
+          var codeYaml = jsyaml.safeLoad(code);
+          var dataYaml = jsyaml.safeLoad(data);
+          var tpl = jute.js.compile(codeYaml);
+          result = tpl(dataYaml);
+        } catch (e) {
+          result = e;
+        }
+        
+        resultsEditor.setValue(jsyaml.safeDump(result));
+      }
+
+      function betterTab(cm) {
+        if (cm.somethingSelected()) {
+          cm.indentSelection("add");
+        } else {
+          cm.replaceSelection(cm.getOption("indentWithTabs")? "\t":
+                              Array(cm.getOption("indentUnit") + 1).join(" "), "end", "+input");
+        }
+      }
+
+      var cmOptions = {
+        lineNumbers: true,
+        mode: "text/x-yaml",
+        gutters: ["CodeMirror-lint-markers"],
+        lint: true,
+        indentUnit: 2,
+        indentWithTabs: false,
+        tabSize: 2,
+        extraKeys: { Tab: betterTab },
+        changes: evalJute
+      };
+
+      codeEditor = CodeMirror.fromTextArea(document.getElementById("code"), cmOptions);
+      dataEditor = CodeMirror.fromTextArea(document.getElementById("data"), cmOptions);
+      resultsEditor = CodeMirror.fromTextArea(document.getElementById("result"),
+                                              Object.assign({}, cmOptions, {
+                                                readOnly: true
+                                              }));
+
+      codeEditor.on('changes', evalJute);
+      dataEditor.on('changes', evalJute);
+
+      evalJute();
     </script>
   </body>
 </html>
