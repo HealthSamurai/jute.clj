@@ -1,5 +1,6 @@
 sudo: true
 language: java
+
 script:
 - cd test; npm install; cd ..
 - make test
@@ -7,13 +8,16 @@ script:
 - make jstest
 - make jar && make clojars-push
 - make demo
+
 install:
 - curl -O https://download.clojure.org/install/linux-install-1.10.1.466.sh
 - chmod +x linux-install-1.10.1.466.sh
 - sudo ./linux-install-1.10.1.466.sh
 - nvm install 10.16.0
+
 jdk:
 - openjdk11
+
 cache:
   directories:
   - "$HOME/.m2"
@@ -21,12 +25,10 @@ cache:
   - "$HOME/.gitlibs"
   - "$TRAVIS_BUILD_DIR/test/node_modules"
   - ".cpcache"
+
 deploy:
   provider: gcs
-  access_key_id: GOOG1EXAFULAKIVE2XMHCT2R6AUQM5JQYCDOTJCGQYHQ3PL6UAREPLNNKVUQA
-  secret_access_key:
-    secure: KnYiREDH9bNcc7smzeceOivxeWyjF0l83Fbp5gcGdr2FVPpotJqkOaid3JseMWDvhc0z1ltapo9emCXwcmwY3qpKpWZ/tGaXt/eUvRcm2IH8eb6oEng76eIOti4t9shwPPsONlecq7FTxPUqSNiC0PDGK/fBnzRC4l9JrSezdt2rQldgo3piIL/myxXfNcoO8mYvl2FUskc6jeG5tU+O2+SnG/B5apm7fRpcg5rkSMlSq1K0DHGagwMKYt5FRhLbi+GavZeF1OYtxOj65tnclJnUaepGlG72qVbt0XQokcGvmilCL9vLQTitCsYI8kn7Tj2B9vpcYPk+/qA5wD4oof52x4Gz9DVeednzE7CiAL8DGo/3fxqEL206AQENkex+2HM/54ZWjpy5BemzRoVQlaCpwCSU5g7BC/orv4ye2z+fXwvfb2fSkrrDVRbtrT6yjWvCegBunTcQn2Q/Vx4Gy3Tq3IHr5dXYz7VP7PjhYp81iw1bFd0FNckusUXvQOxSqmprjpSlbu3eIxFsydJ9Dmgd6n37bPIOeriEJwMwtUaohRmiCW4VkzN4IqSBhlZ2g3iqD+Q60o9RdTFbX2LgJ//752bmEmPuX9LT+C3oL8wGrbZJHQ7jIfmA/vOa4xXkXAOmOFObCLfgn4iFKVB4BonBcEy8iwJls2i6OR/WC8U=
+  edge: true
   bucket: jute-demo-site
   skip_cleanup: true
-  acl: public-read
   local_dir: demo
