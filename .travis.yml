@@ -29,7 +29,7 @@ cache:
 deploy:
   provider: gcs
   edge: true
-  bucket: jute-demo-site
+  bucket: jute-demo.aidbox.app
   skip_cleanup: true
   local_dir: demo
   acl: public-read
