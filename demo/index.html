@@ -127,7 +127,7 @@
         <textarea id="code">type: book
 author: $ book.author.name
 title: $ book.title
-content: 
+content:
   $map: $ book.chapters.*(this.type = "content")
   $as: i
   $body: $ i.content</textarea>
@@ -160,6 +160,8 @@ content:
 
     <script type="text/javascript">
       window.onload = function(event) {
+        goog.require('jute');
+
         var codeEditor = null;
         var dataEditor = null;
         var resultsEditor = null;
