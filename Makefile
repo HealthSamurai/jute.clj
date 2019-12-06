@@ -7,8 +7,7 @@ test:
 	clojure -A:test:runner
 
 js/jute.js:
-	clojure -A:cljs -m cljs.main --optimizations advanced \
-				--target nodejs --output-to "js/jute.js" --output-dir "js" -c jute.js
+	clojure -A:cljs -m cljs.main --optimizations advanced --output-to "js/jute.js" --output-dir "js" -c jute.js
 
 jstest: js/jute.js
 	node --version && cd test && `npm bin`/tap --no-coverage runner.js
