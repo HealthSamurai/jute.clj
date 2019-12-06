@@ -159,7 +159,11 @@ content:
     </article>
 
     <script>
-      document.addEventListener("DOMContentLoaded", function(event) {
+      document.addEventListener("readystatechange", function(event) {
+        if (document.readyState != "complete") {
+          return;
+        }
+
         var codeEditor = null;
         var dataEditor = null;
         var resultsEditor = null;
