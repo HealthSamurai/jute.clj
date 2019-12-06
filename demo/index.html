@@ -14,7 +14,7 @@
     <!-- workaround for "global is not defined" error -->
     <script type="text/javascript">global = window;</script>
 
-    <script src="jute.js"></script>
+    <script src="jute.js" type="text/javascript"></script>
     <style media="screen">
       article {
           display: flex;
@@ -158,12 +158,8 @@ content:
       </div>
     </article>
 
-    <script>
-      document.addEventListener("readystatechange", function(event) {
-        if (document.readyState != "complete") {
-          return;
-        }
-
+    <script type="text/javascript">
+      window.onload = function(event) {
         var codeEditor = null;
         var dataEditor = null;
         var resultsEditor = null;
@@ -218,7 +214,7 @@ content:
         dataEditor.on('changes', evalJute);
 
         evalJute();
-      });
+      };
     </script>
   </body>
 </html>
