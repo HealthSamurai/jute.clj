@@ -1,7 +1,7 @@
 # jute.clj
 
-A Clojure/ClojureScript (Java/JavaScript) implementation of [JUTE
-template language](https://github.com/HealthSamurai/jute.js). Still in
+A Clojure/ClojureScript (Java/JavaScript) implementation of [JUTE data
+mapping language](https://github.com/HealthSamurai/jute.js). Still in
 early development stage.
 
 [![Build Status](https://travis-ci.org/HealthSamurai/jute.clj.svg?branch=master)](https://travis-ci.org/HealthSamurai/jute.clj)

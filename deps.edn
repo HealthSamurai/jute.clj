@@ -12,11 +12,11 @@
                "-m" "jute.core"
                "--app-group-id" "com.health-samurai"
                "--app-artifact-id" "jute"
-               "--app-version" "0.1.0-SNAPSHOT"]}
+               "--app-version" "0.2.0-SNAPSHOT"]}
 
   :deploy
   {:extra-deps {deps-deploy {:mvn/version "RELEASE"}}
-   :main-opts ["-m" "deps-deploy.deps-deploy" "deploy" "target/jute-0.1.0-SNAPSHOT.jar"]}
+   :main-opts ["-m" "deps-deploy.deps-deploy" "deploy" "target/jute-0.2.0-SNAPSHOT.jar"]}
 
   :cljs
   {:extra-deps
