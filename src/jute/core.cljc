@@ -138,6 +138,7 @@
                   :cljs (new js/Date)))
    :groupBy group-by
    :len count
+   :uniq (fn [x] (vec (distinct x)) )
 
    :daysInMonth get-days-in-month
 

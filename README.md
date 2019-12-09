@@ -528,6 +528,8 @@ To be written.
 
 ### dropBlanks(any)
 
+### uniq(array)
+
 # License
 
 Copyright © 2019 Health Samurai Team

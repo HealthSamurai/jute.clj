@@ -59,3 +59,12 @@ tests:
       b:
         bar: 12
         baz: [42]
+
+  - desc: uniq
+    scope:
+      a: [1, 2, 2, false, false, null, "foo", "foo", "bar"]
+    template:
+      a: $ uniq(a)
+
+    result:
+      a: [1, 2, false, null, "foo", "bar"]
