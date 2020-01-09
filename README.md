@@ -518,6 +518,10 @@ To be written.
 
 ### len(any)
 
+### toLowerCase(s)
+
+### toUpperCase(s)
+
 ### range(begin, end, step)
 
 ### flatten(array)

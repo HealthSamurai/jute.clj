@@ -122,6 +122,8 @@
    :str to-string
    :range range
    :toString to-string
+   :toLowerCase str/lower-case
+   :toUpperCase str/upper-case
    :toKeyword keyword
    :hash hash
    :toInt (fn [v] (if (string? v)
