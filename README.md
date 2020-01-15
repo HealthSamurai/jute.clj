@@ -506,7 +506,7 @@ To be written.
 
 ### merge(objects...)
 
-### toStr(val)
+### str(val)
 
 ### toInt(str)
 
