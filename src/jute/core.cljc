@@ -118,7 +118,7 @@
    :assoc assoc
    :abs (fn [i] #?(:clj (java.lang.Math/abs i)
                    :cljs (Math/abs i)))
-   :dropBlanks drop-blanks 
+   :dropBlanks drop-blanks
    :str to-string
    :range range
    :toString to-string
@@ -206,20 +206,27 @@ fn-call
 (* PATHS *)
 
 path
-  = path-head (<'.'> path-component)*
+  = path-head-comp (<'.'> path-component)*
 
-<path-head>
+path-head-comp
   = #'[a-zA-Z_][a-zA-Z_0-9]*'
   | '@'
   | fn-call
   | parens-expr
 
 <path-component>
-  = #'[a-zA-Z_0-9]+'
+  = path-key-comp
+  | path-idx-comp
   | path-predicate
   | path-deep-wildcard
   | path-wildcard
   | parens-expr
+
+path-key-comp
+  = #'[a-zA-Z_0-9]+'
+
+path-idx-comp
+  = #'-?[0-9]+'
 
 path-predicate
   = <'*'> parens-expr
@@ -236,10 +243,10 @@ num-literal
   = #'[0-9]+' ('.' #'[0-9]'*)?
 
 bool-literal
-  = 'true' !path-head | 'false' !path-head
+  = 'true' !path-head-comp | 'false' !path-head-comp
 
 null-literal
-  = 'null' !path-head
+  = 'null' !path-head-comp
 
 string-literal
   = <'\"'> #'[^\"]*'  <'\"'>
@@ -524,43 +531,55 @@ string-literal
       nil)))
 
 (defn- compile-path-component [cmp idx options path]
-  (cond
-    (string? cmp) (if (re-matches #"^\d+$" cmp)
-                    #?(:clj (java.lang.Long/parseLong cmp)
-                       :cljs (js/parseInt cmp))
-
-                    (keyword cmp))
-    (vector? cmp)
-    (let [[t arg] cmp]
+  (let [[t arg] cmp]
+    (cond
+      (= :path-head-comp t)
       (cond
-        (= :path-wildcard t) [(fn [val scope is-multiple?]
-                                (if is-multiple?
-                                  (remove nil? (mapcat expand-wildcard val))
-                                  (remove nil? (expand-wildcard val))))
-                              true]
+        (= "@" arg)
+        [(fn [val scope is-multiple?] scope) false]
 
-        (= :path-predicate t) (let [compiled-pred (compile-expression-ast arg options path)]
-                                [(fn [val scope is-multiple?]
-                                   (vec (filter #(compiled-pred (assoc scope :this %)) val)))
-                                 true])
+        (string? arg)
+        (keyword arg)
 
         :else
+        [(let [compiled-expr (compile-expression-ast arg options path)]
+           (fn [val scope is-multiple?] (compiled-expr scope)))
+         false])
 
-        (if (= 0 idx)
-          [(let [compiled-expr (compile-expression-ast cmp options path)]
-             (fn [val scope is-multiple?]
-               (compiled-expr scope)))
-           false]
-          [(let [compiled-expr (compile-expression-ast cmp options path)]
-             (fn [val scope is-multiple?]
-               (let [result (compiled-expr scope)
-                     result (if (string? result) (keyword result) result)]
-                 (if is-multiple?
-                   (remove nil? (map #(get % result) val))
-                   (get val result)))))
-           false])))))
+      (= :path-key-comp t) (keyword arg)
 
-(def path-root (keyword "@"))
+      (= :path-idx-comp t) (let [cmp #?(:clj (java.lang.Long/parseLong arg)
+                                        :cljs (js/parseInt cmp))]
+                             (if (> 0 cmp)
+                               [(fn [val scope is-multiple?]
+                                  (if is-multiple?
+                                    (mapv #(get % (+ (count %) cmp)) val)
+                                    (get val (+ (count val) cmp))))
+                                false]
+
+                               cmp))
+
+      (= :path-wildcard t) [(fn [val scope is-multiple?]
+                              (if is-multiple?
+                                (remove nil? (mapcat expand-wildcard val))
+                                (remove nil? (expand-wildcard val))))
+                            true]
+
+      (= :path-predicate t) (let [compiled-pred (compile-expression-ast arg options path)]
+                              [(fn [val scope is-multiple?]
+                                 (vec (filter #(compiled-pred (assoc scope :this %)) val)))
+                               true])
+
+      :else
+
+      [(let [compiled-expr (compile-expression-ast cmp options path)]
+         (fn [val scope is-multiple?]
+           (let [result (compiled-expr scope)
+                 result (if (string? result) (keyword result) result)]
+             (if is-multiple?
+               (remove nil? (map #(get % result) val))
+               (get val result)))))
+       false])))
 
 (defn-compile compile-path [[_ & path-comps] options path]
   (let [compiled-comps (map-indexed (fn [idx itm] (compile-path-component itm idx options path))
@@ -571,16 +590,12 @@ string-literal
                     is-multiple? false
                     idx 0]
                (let [next-val
-                     (if (= path-root cmp)
-                       val
+                     (if (vector? cmp)
+                       ((first cmp) val scope is-multiple?)
 
-                       (if (vector? cmp)
-                         ((first cmp) val scope is-multiple?)
-
-                         (if is-multiple?
-                           (remove nil? (map #(get % cmp) val))
-                           (get val cmp))))]
-
+                       (if is-multiple?
+                         (remove nil? (map #(get % cmp) val))
+                         (get val cmp)))]
                  (if (empty? tail)
                    next-val
                    (recur tail next-val (or is-multiple?
@@ -607,7 +622,7 @@ string-literal
 (defn-compile compile-expression-ast [ast options path]
   (if-let [compile-fn (get expressions-compile-fns (first ast))]
     (compile-fn ast options path)
-    (raise (str "Cannot find compile function for node type " (first ast)))))
+    (raise (str "Cannot find compile function for node type " (first ast) ". Full node: " (pr-str ast)))))
 
 (defn- check-for-parsing-failure? [x]
   (if (insta/failure? x)
@@ -643,4 +658,3 @@ string-literal
     (if (fn? result)
       result
       (constantly result))))
-
