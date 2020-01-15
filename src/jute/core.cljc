@@ -654,7 +654,7 @@ string-literal
   "Compiles JUTE template into invocabe function."
   [node & [options]]
 
-  (let [result (compile* node (or options {}) ["@"])]
+  (let [result (compile* node (or options {}) [(keyword "@")])]
     (if (fn? result)
       result
       (constantly result))))
