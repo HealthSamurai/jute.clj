@@ -549,7 +549,7 @@ string-literal
       (= :path-key-comp t) (keyword arg)
 
       (= :path-idx-comp t) (let [cmp #?(:clj (java.lang.Long/parseLong arg)
-                                        :cljs (js/parseInt cmp))]
+                                        :cljs (js/parseInt arg))]
                              (if (> 0 cmp)
                                [(fn [val scope is-multiple?]
                                   (if is-multiple?
