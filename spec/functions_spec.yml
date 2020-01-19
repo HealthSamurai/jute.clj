@@ -1,6 +1,17 @@
 ---
 suite: JUTE built-in functions
 tests:
+  - desc: randNth
+
+    scope:
+      dict:
+        month: ["April"]
+    template:
+      date: $ randNth(dict.month)
+
+    result:
+      date: "April"
+
   - desc: splitStr
 
     scope:

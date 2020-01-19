@@ -121,6 +121,7 @@
    :dropBlanks drop-blanks
    :str to-string
    :range range
+   :randNth rand-nth
    :toString to-string
    :toLowerCase str/lower-case
    :toUpperCase str/upper-case

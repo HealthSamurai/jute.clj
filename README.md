@@ -502,6 +502,8 @@ To be written.
 
 ### substr(str, start, end)
 
+### randNth(array)
+
 ### concat(arrays...)
 
 ### merge(objects...)
