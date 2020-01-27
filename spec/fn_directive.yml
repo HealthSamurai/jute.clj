@@ -27,3 +27,33 @@ tests:
         $body: $ greetStuff("hello, ")
 
     result: hello, world
+
+  - desc: fn directive can into recursion
+    scope: null
+    template:
+      $let:
+        recFn:
+          $fn: [i]
+          $name: recFn
+          $body:
+            $if: $ i < 10
+            $then: $ recFn(i + 1)
+            $else: $ i
+      $body: $ recFn(0)
+    result: 10
+
+  - desc: fn directive fibonacci example
+    scope: null
+    template:
+      $let:
+        fib:
+          $fn: ["n"]
+          $name: fib
+          $body: 
+            $if: $ n <= 1
+            $then: 1
+            $else: $ fib(n - 1) + fib(n - 2)
+
+      $body: $ fib(10)
+    result: 89
+

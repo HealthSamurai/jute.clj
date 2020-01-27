@@ -447,6 +447,22 @@ $body:
   area: $ circleArea(circles.0.radius)
 ```
 
+You can pass an optional `$name` attribute to a `$fn` directive if you
+want a function to be able to call itself:
+
+```yaml
+$let:
+  fib:
+    $fn: ["n"]
+    $name: fib
+    $body: 
+      $if: $ n <= 1
+      $then: 1
+      $else: $ fib(n - 1) + fib(n - 2)
+$body:
+  area: $ fib(10)
+```
+
 ### $call
 
 `$call` directive is a way to call a function outside of JUTE

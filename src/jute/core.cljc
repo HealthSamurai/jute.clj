@@ -347,12 +347,16 @@ string-literal
 
 (defn-compile compile-fn-directive [node options path]
   (let [arg-names (map keyword (:$fn node))
+        fn-name (:$name node)
         compiled-body (compile* (:$body node) options (conj path :$body))]
 
     (eval-fn path [scope]
-             (eval-fn path [& args]
-                      (let [new-scope (merge scope (zipmap arg-names args))]
-                        (eval-node compiled-body new-scope))))))
+             (fn fn-lambda [& args]
+               (let [new-scope (merge scope (zipmap arg-names args))
+                     new-scope (if (and fn-name (not (str/blank? fn-name)))
+                                 (assoc new-scope (keyword fn-name) fn-lambda)
+                                 new-scope)]
+                 (eval-node compiled-body new-scope))))))
 
 (defn-compile compile-switch-directive [node options path]
   (let [compiled-node (reduce-kv (fn [m k v] (assoc m k (compile* v options (conj path k))))
