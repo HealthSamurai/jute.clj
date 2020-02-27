@@ -280,10 +280,29 @@ tests:
         $then: "it's broken"
         $else: "it works"
 
-
     result:
       result: it works
       result2: it works
+
+
+  - desc: string comparsion works lexicographically
+    scope:
+      aaa: "aaa"
+      aab: "aabckckckc"
+
+    template:
+      gt: $ aaa > aab
+      lt: $ aaa < aab
+      lte: $ aaa <= aab
+      gte: $ aaa >= aab
+      gte2: $ aaa >= aaa
+
+    result:
+      gt: false
+      lt: true
+      lte: true
+      gte: false
+      gte2: true
 
   - desc: expression can be used as a path component
     scope:

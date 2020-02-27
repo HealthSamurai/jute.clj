@@ -435,6 +435,28 @@ string-literal
 
       result)))
 
+(defn gt-operator [a b]
+  (if (and (string? a) (string? b))
+    (= 1 (compare a b))
+    (> a b)))
+
+(defn lt-operator [a b]
+  (if (and (string? a) (string? b))
+    (= -1 (compare a b))
+    (< a b)))
+
+(defn gte-operator [a b]
+  (if (and (string? a) (string? b))
+    (let [r (compare a b)]
+      (or (= 1 r) (= 0 r)))
+    (>= a b)))
+
+(defn lte-operator [a b]
+  (if (and (string? a) (string? b))
+    (let [r (compare a b)]
+      (or (= -1 r) (= 0 r)))
+    (<= a b)))
+
 (def operator-to-fn
   {"+" (fn [a b] (if (string? a) (str a b) (+ a b)))
    "-" clojure.core/-
@@ -443,10 +465,10 @@ string-literal
    "=" clojure.core/=
    "!=" clojure.core/not=
    "!" clojure.core/not
-   ">" clojure.core/>
-   "<" clojure.core/<
-   ">=" clojure.core/>=
-   "<=" clojure.core/<=
+   ">" gt-operator
+   "<" lt-operator
+   ">=" gte-operator
+   "<=" lte-operator
    "/" clojure.core//})
 
 (declare compile-expression-ast)
