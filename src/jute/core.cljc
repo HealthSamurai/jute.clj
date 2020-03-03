@@ -437,24 +437,24 @@ string-literal
 
 (defn gt-operator [a b]
   (if (and (string? a) (string? b))
-    (= 1 (compare a b))
+    (> (compare a b) 0)
     (> a b)))
 
 (defn lt-operator [a b]
   (if (and (string? a) (string? b))
-    (= -1 (compare a b))
+    (< (compare a b) 0)
     (< a b)))
 
 (defn gte-operator [a b]
   (if (and (string? a) (string? b))
     (let [r (compare a b)]
-      (or (= 1 r) (= 0 r)))
+      (>= r 0))
     (>= a b)))
 
 (defn lte-operator [a b]
   (if (and (string? a) (string? b))
     (let [r (compare a b)]
-      (or (= -1 r) (= 0 r)))
+      (<= r 0))
     (<= a b)))
 
 (def operator-to-fn
