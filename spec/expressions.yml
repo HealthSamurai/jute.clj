@@ -312,6 +312,14 @@ tests:
     result:
       result: my
 
+  - desc: chaining function calls
+    scope:
+      s: "foo bar bar baz"
+    template:
+      result: $ s |> splitStr(" +") |> uniq
+    result:
+      result: [foo, bar, baz]
+
   # - desc: boolean logic expressions are evaluated properly
   #   scope:
   #     foo: 2
