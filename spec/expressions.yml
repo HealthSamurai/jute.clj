@@ -208,6 +208,15 @@ tests:
     result:
       bar: -10
 
+  - desc: single-quoted and double-quoted string literal
+    scope:
+    template:
+      foo: $ 'foo'
+      bar: $ "bar"
+    result:
+      foo: foo
+      bar: bar
+
   # - desc: union operator performs union operation on it\'s operands
   #   scope:
   #     <<: *goessner
