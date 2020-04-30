@@ -52,7 +52,8 @@
     (throw ex)
 
     (let [path-str (path-to-string path)
-          new-msg (str #?(:clj (.getMessage ex) :cljs (aget ex "message")) msg-str path-str)
+          new-msg (str #?(:clj (.getName (class ex)) :cljs (aget ex "name")) ": "
+                       (or #?(:clj (.getMessage ex) :cljs (aget ex "message")) "No message") msg-str path-str)
           new-ex #?(:clj (clojure.lang.ExceptionInfo. new-msg {:path path :path-str path-str} ex)
                     :cljs (js/Error. new-msg))]
 
