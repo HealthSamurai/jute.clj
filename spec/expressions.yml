@@ -312,6 +312,23 @@ tests:
     result:
       result: my
 
+  - desc: paths can access numeric keys in maps
+    scope:
+      pid1:
+        "1": foo
+        "2": bar
+
+      pid2:
+        - foo
+        - bar
+    template:
+      result1: $ pid1.2
+      result2: $ pid2.1
+    result:
+      result1: bar
+      result2: bar
+
+
   # - desc: boolean logic expressions are evaluated properly
   #   scope:
   #     foo: 2

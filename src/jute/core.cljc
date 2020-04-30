@@ -225,7 +225,7 @@ path-head-comp
   | parens-expr
 
 path-key-comp
-  = #'[a-zA-Z_0-9]+'
+  = #'[a-zA-Z_][a-zA-Z_0-9]+'
 
 path-idx-comp
   = #'-?[0-9]+'
@@ -578,14 +578,21 @@ string-literal
 
       (= :path-idx-comp t) (let [cmp #?(:clj (java.lang.Long/parseLong arg)
                                         :cljs (js/parseInt arg))]
-                             (if (> 0 cmp)
-                               [(fn [val scope is-multiple?]
+                             [(fn [val scope is-multiple?]
+                                (if (sequential? val)
                                   (if is-multiple?
-                                    (mapv #(get % (+ (count %) cmp)) val)
-                                    (get val (+ (count val) cmp))))
-                                false]
+                                    (mapv #(get % (if (neg? cmp) (+ (count %) cmp) cmp)) val)
+                                    (get val (if (neg? cmp) (+ (count val) cmp) cmp)))
 
-                               cmp))
+                                  (do
+                                    (if is-multiple?
+                                      (mapv #(or (get % cmp)
+                                                 (get % arg)
+                                                 (get % (keyword arg))) val)
+                                      (or (get val cmp)
+                                          (get val arg)
+                                          (get val (keyword arg)))))))
+                              false])
 
       (= :path-wildcard t) [(fn [val scope is-multiple?]
                               (if is-multiple?
