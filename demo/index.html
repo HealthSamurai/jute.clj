@@ -233,8 +233,25 @@ PID:
   '32': 
 `,
           tpl: `
-a: $ foo
-b: $ bar
+resourceType: Patient
+name:
+  - given: ["$ PID.5.1"]
+    family: $ PID.5.2
+birthDate: $ PID.7
+gender: 
+  $if: $ PID.8 = "M"
+  $then: male
+  $else: female
+address:
+  - line: ['$ PID.11.0.1', '$ PID.11.0.2']
+    use: home
+    city: $ PID.11.0.3
+    state: $ PID.11.0.4
+    country: $ PID.11.0.6
+    postalCode: $ PID.11.0.5
+telecom:
+  - use: home
+    value: $ PID.13.0.1
 `
         },
         readme: {
