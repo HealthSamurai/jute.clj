@@ -410,11 +410,6 @@ funnyStuff:
   $body: $ "hello, " + idx
 ```
 
-
-### $reduce
-
-To be done later.
-
 ### $let
 
 `$let` directive evaluates into it's `$body` with scope extended with
