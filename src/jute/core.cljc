@@ -607,6 +607,14 @@ string-literal
                                  (vec (filter #(compiled-pred (assoc scope :this %)) val)))
                                true])
 
+      (= :path-deep-wildcard t) [(fn [val scope is-multiple?]
+                                   (->> (if is-multiple? val [val])
+                                        (mapcat (partial tree-seq
+                                                  (some-fn map? vector?)
+                                                  #(if (map? %) (vals %) %)))
+                                        (remove nil?)))
+                                 true]
+
       :else
 
       [(let [compiled-expr (compile-expression-ast cmp options path)]
