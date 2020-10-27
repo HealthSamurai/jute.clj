@@ -128,6 +128,7 @@
    :toString to-string
    :toLowerCase #(str/lower-case (or % ""))
    :toUpperCase #(str/upper-case (or % ""))
+   :capitalize #(str/capitalize (or % ""))
    :toKeyword keyword
    :hash hash
    :toInt (fn [v] (if (string? v)

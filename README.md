@@ -540,6 +540,8 @@ To be written.
 
 ### toUpperCase(s)
 
+### capitalize(s)
+
 ### range(begin, end, step)
 
 ### flatten(array)

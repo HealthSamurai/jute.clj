@@ -141,3 +141,25 @@ tests:
       b: ""
       c: ""
       d: "TEST"
+
+  - desc: capitalize
+    scope:
+      a: "HELLO"
+      b: ""
+      c: null
+      d: "Test"
+      e: "one"
+
+    template:
+      a: $ capitalize(a)
+      b: $ capitalize(b)
+      c: $ capitalize(c)
+      d: $ capitalize(d)
+      e: $ capitalize(e)
+
+    result:
+      a: "Hello"
+      b: ""
+      c: ""
+      d: "Test"
+      e: "One"
