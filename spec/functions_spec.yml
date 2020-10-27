@@ -79,3 +79,18 @@ tests:
 
     result:
       a: [1, 2, false, null, "foo", "bar"]
+
+  - desc: replace
+    scope:
+      a: "Hello JUTE  mapping tool !"
+      b: ""
+      c: null
+    template:
+      a: $ replace(a, "\s+", " ")
+      b: $ replace(b, "!", "-")
+      c: $ replace(c, "-", ">")
+
+    result:
+      a: "Hello JUTE mapping tool !"
+      b: ""
+      c: ""

@@ -113,6 +113,8 @@
    :splitStr (fn [s re & [limit]] (str/split s (re-pattern re) (or limit 0)))
    :substring subs      ;; deprecated
    :substr    subs
+   :replace (fn [s re to]
+              (str/replace (or s "") (re-pattern re) to))
    :concat concat
    :merge merge
    :flatten flatten
