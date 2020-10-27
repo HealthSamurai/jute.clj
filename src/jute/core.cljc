@@ -253,7 +253,7 @@ null-literal
   = 'null' !path-head-comp
 
 string-literal
-  = <'\"'> #'[^\"]*'  <'\"'>
+  = <'\"'> #'[^\"]*'  <'\"'> | <\"'\"> #\"[^']*\"  <\"'\">
 "
    :auto-whitespace :standard))
 
