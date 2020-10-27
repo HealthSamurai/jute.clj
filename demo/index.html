@@ -114,24 +114,149 @@
           background-position: right bottom;
           width: 100%; height: 100%;
       }
+
+
+      header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+      }
     </style>
   </head>
 
   <body>
-    <h2>JUTE Demo</h2>
+    <header>
+      <h2>JUTE Demo</h2>
+
+      <div>
+        Example:
+        <select onchange="pickExample(event.target.value)">
+          <option value="readme">README</option>
+          <option value="pid">HL7v2 to FHIR</option>
+        </select>
+      </div>
+
+      <div>
+        <a href="https://health-samurai.io/"><img src="https://uploads-ssl.webflow.com/57441aa5da71fdf07a0a2e19/5a5530dbcf0636000108521f_new-hslogo.svg" alt="hs-logo"></a>
+      </div>
+    </header>
     <article>
       <div class="cmWrap">
-        <textarea id="code">type: book
-author: $ book.author.name
-title: $ book.title
-content:
-  $map: $ book.chapters.*(this.type = "content")
-  $as: i
-  $body: $ i.content</textarea>
+        <textarea id="code"></textarea>
       </div>
 
       <div class="cmWrap">
-        <textarea id="data">book:
+        <textarea id="data"></textarea>
+      </div>
+
+      <div class="cmWrap">
+        <textarea id="result"></textarea>
+      </div>
+    </article>
+
+    <script type="text/javascript">
+      var codeEditor = null;
+      var dataEditor = null;
+      var resultsEditor = null;
+
+      const examples = {
+        pid: {
+          data: `
+PID:
+  '0': PID
+  '1': '1'
+  '2': 
+  '3':
+  - '0': "^"
+    '1': F8457
+    '2': 
+    '3': 
+    '4': 
+    '5': VIT
+  - '0': "^"
+    '1': '12345567899'
+    '2': 
+    '3': 
+    '4': ORCA MRN
+    '5': ORCA MRN
+  '4': 
+  '5':
+    '0': "^"
+    '1': ORCASRC
+    '2': TESTSIX
+  '6': 
+  '7': '1987-06-03T00:00:00.000Z'
+  '8': M
+  '9': []
+  '10': 
+  '11':
+  - '0': "^"
+    '1': 123 WATERMELON AVE
+    '2': 
+    '3': TESTVILLE
+    '4': TN
+    '5': '12345'
+    '6': USA
+    '7': P
+    '8': 
+    '9': TESTVILLE
+  '12': TESTVILLE
+  '13':
+  - '0': "^"
+    '1': "(785)333-3333"
+    '2': P
+    '3': H
+    '4': 
+    '5': 
+    '6': '785'
+    '7': '2546658'
+  '14': []
+  '15': 
+  '16': []
+  '17': 
+  '18':
+    '0': "^"
+    '1': '123456789'
+  '19': 555-55-5555
+  '20': 
+  '21': 
+  '22': 
+  '23': 
+  '24': 
+  '25': 
+  '26': 
+  '27': 
+  '28': 
+  '29': 
+  '30': N
+  '31': 
+  '32': 
+`,
+          tpl: `
+resourceType: Patient
+name:
+  - given: ["$ PID.5.1"]
+    family: $ PID.5.2
+birthDate: $ PID.7
+gender: 
+  $if: $ PID.8 = "M"
+  $then: male
+  $else: female
+address:
+  - line: ['$ PID.11.0.1', '$ PID.11.0.2']
+    use: home
+    city: $ PID.11.0.3
+    state: $ PID.11.0.4
+    country: $ PID.11.0.6
+    postalCode: $ PID.11.0.5
+telecom:
+  - use: home
+    value: $ PID.13.0.1
+`
+        },
+        readme: {
+          data: `
+book:
   author:
     name: M. Soloviev
     title: PHD
@@ -147,20 +272,26 @@ content:
   - type: content
     content: Chapter 3
   - type: afterwords
-    content: Afterwords</textarea>
-      </div>
+    content: Afterwords
+`,
+          tpl: `
+type: book
+author: $ book.author.name
+title: $ book.title
+content:
+  $map: $ book.chapters.*(this.type = "content")
+  $as: i
+  $body: $ i.content
+`
+        }
+      };
 
-      <div class="cmWrap">
-        <textarea id="result"></textarea>
-      </div>
-    </article>
+      const pickExample = function(e) {
+        codeEditor.setValue(examples[e].tpl.trim());
+        dataEditor.setValue(examples[e].data.trim());
+      };
 
-    <script type="text/javascript">
       window.onload = function(event) {
-        var codeEditor = null;
-        var dataEditor = null;
-        var resultsEditor = null;
-
         function evalJute() {
           var code = codeEditor.getValue();
           var data = dataEditor.getValue();
@@ -172,7 +303,6 @@ content:
             var tpl = jute.js.compile(codeYaml);
             result = tpl(dataYaml);
           } catch (e) {
-            console.log(">>> exception", e);
             result = e;
           }
 
@@ -209,6 +339,8 @@ content:
 
         codeEditor.on('changes', evalJute);
         dataEditor.on('changes', evalJute);
+
+        pickExample('readme');
 
         evalJute();
       };

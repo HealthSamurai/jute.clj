@@ -24,7 +24,7 @@ specFiles.forEach((f) => {
       t.test(specTest.desc, t => {
         const tpl = jute.compile(specTest.template, specTest.options || {});
         const result = tpl(specTest.scope);
-        
+
         t.strictSame(result, specTest.result, specTest.desc);
         t.done();
       });
@@ -38,7 +38,7 @@ specFiles.forEach((f) => {
 tap.test("Exceptions", t => {
   t.test("reports template path where compilation failed", t => {
     t.throws(() => {
-      jute.compile({foo: ["$ 30c"]}, {});
+      jute.compile({foo: ["$ 30c-"]}, {});
     }, {
       message: "While compiling JUTE template at @.foo.0",
       path: ["@", "foo", 0]
@@ -47,18 +47,19 @@ tap.test("Exceptions", t => {
     t.done();
   });
 
-  t.test("reports template path where evaluation failed", t => {
-    t.throws(() => {
-      const t = jute.compile({foo: ["$ foo(a)"]}, {});
-      t({a: 0});
-    }, {
-      message: "While evaluating JUTE template at @.foo.0",
-      path: ["@", "foo", 0],
-      pathStr: "@.foo.0"
-    });
+  // t.test("reports error message why evaluation failed", t => {
+  //   const tpl = jute.compile({foo: ["$ 42 / a"]}, {});
 
-    t.done();
-  });
+  //   t.throws(() => {
+  //     tpl({a: 0});
+  //   }, {
+  //     message: "Division by zeroooooooo.\nWhile evaluating JUTE template at @.foo.0",
+  //     path: ["@", "foo", 0],
+  //     pathStr: "@.foo.0"
+  //   });
+
+  //   t.done();
+  // });
 
 
   t.done();

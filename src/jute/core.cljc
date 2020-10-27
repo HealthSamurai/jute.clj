@@ -52,7 +52,8 @@
     (throw ex)
 
     (let [path-str (path-to-string path)
-          new-msg (str #?(:clj (.getMessage ex) :cljs (aget ex "message")) msg-str path-str)
+          new-msg (str #?(:clj (.getName (class ex)) :cljs (aget ex "name")) ": "
+                       (or #?(:clj (.getMessage ex) :cljs (aget ex "message")) "No message") msg-str path-str)
           new-ex #?(:clj (clojure.lang.ExceptionInfo. new-msg {:path path :path-str path-str} ex)
                     :cljs (js/Error. new-msg))]
 
@@ -112,6 +113,8 @@
    :splitStr (fn [s re & [limit]] (str/split s (re-pattern re) (or limit 0)))
    :substring subs      ;; deprecated
    :substr    subs
+   :replace (fn [s re to]
+              (str/replace (or s "") (re-pattern re) to))
    :concat concat
    :merge merge
    :flatten flatten
@@ -228,7 +231,7 @@ path-head-comp
   | parens-expr
 
 path-key-comp
-  = #'[a-zA-Z_0-9]+'
+  = #'[a-zA-Z_][a-zA-Z_0-9]+'
 
 path-idx-comp
   = #'-?[0-9]+'
@@ -254,7 +257,7 @@ null-literal
   = 'null' !path-head-comp
 
 string-literal
-  = <'\"'> #'[^\"]*'  <'\"'>
+  = <'\"'> #'[^\"]*'  <'\"'> | <\"'\"> #\"[^']*\"  <\"'\">
 "
    :auto-whitespace :standard))
 
@@ -590,14 +593,21 @@ string-literal
 
       (= :path-idx-comp t) (let [cmp #?(:clj (java.lang.Long/parseLong arg)
                                         :cljs (js/parseInt arg))]
-                             (if (> 0 cmp)
-                               [(fn [val scope is-multiple?]
+                             [(fn [val scope is-multiple?]
+                                (if (sequential? val)
                                   (if is-multiple?
-                                    (mapv #(get % (+ (count %) cmp)) val)
-                                    (get val (+ (count val) cmp))))
-                                false]
+                                    (mapv #(get % (if (neg? cmp) (+ (count %) cmp) cmp)) val)
+                                    (get val (if (neg? cmp) (+ (count val) cmp) cmp)))
 
-                               cmp))
+                                  (do
+                                    (if is-multiple?
+                                      (mapv #(or (get % cmp)
+                                                 (get % arg)
+                                                 (get % (keyword arg))) val)
+                                      (or (get val cmp)
+                                          (get val arg)
+                                          (get val (keyword arg)))))))
+                              false])
 
       (= :path-wildcard t) [(fn [val scope is-multiple?]
                               (if is-multiple?
@@ -609,6 +619,14 @@ string-literal
                               [(fn [val scope is-multiple?]
                                  (vec (filter #(compiled-pred (assoc scope :this %)) val)))
                                true])
+
+      (= :path-deep-wildcard t) [(fn [val scope is-multiple?]
+                                   (->> (if is-multiple? val [val])
+                                        (mapcat (partial tree-seq
+                                                  (some-fn map? vector?)
+                                                  #(if (map? %) (vals %) %)))
+                                        (remove nil?)))
+                                 true]
 
       :else
 

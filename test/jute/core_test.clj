@@ -138,6 +138,11 @@
                                     :$then "$ 42b"
                                     :$else false})))
 
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"Divide by zero"
+                          (compile {:$if "$ 3 / 0"
+                                    :$then 42
+                                    :$else false})))
+
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"While compiling JUTE template at @.\$if"
                           (compile {:$if "$ 3 / 0"
                                     :$then 42
@@ -155,13 +160,18 @@
 
 (deftest evaluation-exceptions-test
   (testing "Reports template path where evaluation failed"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"Divide by zero"
+                          ((compile {:$map "$ a"
+                                     :$as "i"
+                                     :$body "$ b / 0"}) {:a [1] :b 1})))
+
     (is (thrown-with-msg? clojure.lang.ExceptionInfo #"While evaluating JUTE template at @.\$body"
                           ((compile {:$map "$ a"
                                      :$as "i"
                                      :$body "$ b / 0"}) {:a [1] :b 1}))))
 
   (testing "Expressions thrown in JUTE functions reports correct path"
-    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"While evaluating JUTE template at @.\$let.f.\$body"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"java.lang.ArithmeticException: Divide by zero\nWhile evaluating JUTE template at @.\$let.f.\$body"
                           ((compile {:$let {:f {:$fn [:a]
                                                 :$body "$ a / 0"}}
                                      :$body {:b "$ f(a)"}}) {:a 1})))))
