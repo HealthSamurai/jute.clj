@@ -321,6 +321,14 @@ tests:
     result:
       result: my
 
+  - desc: chaining function calls
+    scope:
+      s: "foo bar bar baz"
+    template:
+      result: $ s |> splitStr(" +") |> uniq
+    result:
+      result: [foo, bar, baz]
+
   - desc: paths can access numeric keys in maps
     scope:
       pid1:
@@ -336,7 +344,6 @@ tests:
     result:
       result1: bar
       result2: bar
-
 
   # - desc: boolean logic expressions are evaluated properly
   #   scope:

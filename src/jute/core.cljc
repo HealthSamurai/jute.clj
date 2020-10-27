@@ -173,6 +173,7 @@
   | multiplicative-expr
   | unary-expr
   | terminal-expr
+  | pipeline-expr
 
 <parens-expr>
   = <'('> expr <')'>
@@ -200,6 +201,9 @@ unary-expr
 
 <terminal-expr>
   = bool-literal / num-literal / string-literal / null-literal / path / fn-call / parens-expr
+
+pipeline-expr
+ = or-expr (<'|>'> (fn-call / path)) +
 
 fn-call
   = path <'('> fn-call-args <')'>
@@ -507,6 +511,15 @@ string-literal
 
                (apply f (mapv #(eval-node % scope) compiled-args))))))
 
+(defn-compile compile-pipeline-expr [[_ first-arg & pipes] options path]
+  (-> (reduce
+        (fn [first-arg pipe]
+          (case (first pipe)
+            :fn-call (into [:fn-call (second pipe)] (cons first-arg (nnext pipe)))
+            :path [:fn-call pipe first-arg]))
+        first-arg pipes)
+      (compile-fn-call options path)))
+
 (defn-compile compile-and-expr [[_ left right] options path]
   (if right
     (let [compiled-left (compile-expression-ast left options path)
@@ -656,6 +669,7 @@ string-literal
    :or-expr compile-or-expr
    :equality-expr compile-op-expr
    :comparison-expr compile-op-expr
+   :pipeline-expr compile-pipeline-expr
    :unary-expr compile-unary-expr
    :num-literal compile-num-literal
    :null-literal compile-null-literal
