@@ -110,7 +110,7 @@
 (def standard-fns
   {:join str/join       ;; deprecated
    :joinStr str/join
-   :splitStr (fn [s re & [limit]] (str/split s (re-pattern re) (or limit 0)))
+   :splitStr (fn [s re & [limit]] (str/split (or s "") (re-pattern re) (or limit 0)))
    :substring subs      ;; deprecated
    :substr    subs
    :replace (fn [s re to]
@@ -126,8 +126,9 @@
    :range range
    :randNth rand-nth
    :toString to-string
-   :toLowerCase str/lower-case
-   :toUpperCase str/upper-case
+   :toLowerCase #(str/lower-case (or % ""))
+   :toUpperCase #(str/upper-case (or % ""))
+   :capitalize #(str/capitalize (or % ""))
    :toKeyword keyword
    :hash hash
    :toInt (fn [v] (if (string? v)

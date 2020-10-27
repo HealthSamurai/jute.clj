@@ -22,6 +22,15 @@ tests:
     result:
       first: ["foo", "bar", "baz"]
 
+
+  - desc: splitStr
+    scope:
+      s: null
+    template:
+      first: $ splitStr(s, " +")
+    result:
+      first: [""]
+
   - desc: splitStr with limit = 0
 
     scope:
@@ -94,3 +103,63 @@ tests:
       a: "Hello JUTE mapping tool !"
       b: ""
       c: ""
+
+  - desc: toLowerCase
+    scope:
+      a: "HELLO"
+      b: ""
+      c: null
+      d: "Test"
+
+    template:
+      a: $ toLowerCase(a)
+      b: $ toLowerCase(b)
+      c: $ toLowerCase(c)
+      d: $ toLowerCase(d)
+
+    result:
+      a: "hello"
+      b: ""
+      c: ""
+      d: "test"
+
+  - desc: toUpperCase
+    scope:
+      a: "HELLO"
+      b: ""
+      c: null
+      d: "Test"
+
+    template:
+      a: $ toUpperCase(a)
+      b: $ toUpperCase(b)
+      c: $ toUpperCase(c)
+      d: $ toUpperCase(d)
+
+    result:
+      a: "HELLO"
+      b: ""
+      c: ""
+      d: "TEST"
+
+  - desc: capitalize
+    scope:
+      a: "HELLO"
+      b: ""
+      c: null
+      d: "Test"
+      e: "one"
+
+    template:
+      a: $ capitalize(a)
+      b: $ capitalize(b)
+      c: $ capitalize(c)
+      d: $ capitalize(d)
+      e: $ capitalize(e)
+
+    result:
+      a: "Hello"
+      b: ""
+      c: ""
+      d: "Test"
+      e: "One"
