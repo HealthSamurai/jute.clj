@@ -175,3 +175,10 @@
                           ((compile {:$let {:f {:$fn [:a]
                                                 :$body "$ a / 0"}}
                                      :$body {:b "$ f(a)"}}) {:a 1})))))
+
+(deftest index-access-test
+  (let [data {:scope {:data
+                      '({:name ({:value "one"})}
+                        {:name ({:value "two"})})}
+              :template {:value "$ data.0.name.0.value"}}]
+    (is (= {:value "one"} ((compile (:template data)) (:scope data))))))

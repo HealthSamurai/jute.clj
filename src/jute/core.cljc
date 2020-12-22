@@ -597,8 +597,8 @@ string-literal
                              [(fn [val scope is-multiple?]
                                 (if (sequential? val)
                                   (if is-multiple?
-                                    (mapv #(get % (if (neg? cmp) (+ (count %) cmp) cmp)) val)
-                                    (get val (if (neg? cmp) (+ (count val) cmp) cmp)))
+                                    (mapv #(get % (if (neg? cmp) (+ (count %) cmp) cmp)) (vec val))
+                                    (get (vec val) (if (neg? cmp) (+ (count val) cmp) cmp)))
 
                                   (do
                                     (if is-multiple?
