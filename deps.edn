@@ -1,8 +1,8 @@
 {:paths ["src" "resources"  ]
- :deps {io.forward/yaml      {:mvn/version "1.0.9" :exclusions [org.flatland/ordered]}
-        org.flatland/ordered {:mvn/version "1.5.7"}
-        org.clojure/clojure  {:mvn/version "1.10.0"}
-        instaparse           {:mvn/version"1.4.8"}}
+ :deps {io.forward/yaml       {:mvn/version "1.0.9" :exclusions [org.flatland/ordered]}
+        org.flatland/ordered  {:mvn/version "1.5.7"}
+        org.clojure/clojure   {:mvn/version "1.10.0"}
+        instaparse/instaparse {:mvn/version"1.4.8"}}
 
  :aliases
  {:jar
@@ -15,7 +15,7 @@
                "--app-version" "0.2.0-SNAPSHOT"]}
 
   :deploy
-  {:extra-deps {deps-deploy {:mvn/version "RELEASE"}}
+  {:extra-deps {deps-deploy/deps-deploy {:mvn/version "RELEASE"}}
    :main-opts ["-m" "deps-deploy.deps-deploy" "deploy" "target/jute-0.2.0-SNAPSHOT.jar"]}
 
   :cljs
@@ -24,7 +24,7 @@
 
   :nrepl
   {:extra-deps
-   {spyscope                      {:mvn/version "0.1.6"}
+   {spyscope/spyscope             {:mvn/version "0.1.6"}
     org.clojure/clojure           {:mvn/version "1.10.0-RC4"}
     org.clojure/tools.nrepl       {:mvn/version "0.2.13"}
     cider/cider-nrepl             {:mvn/version "0.22.3"}
