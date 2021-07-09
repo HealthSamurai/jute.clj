@@ -130,6 +130,7 @@
    :toUpperCase #(str/upper-case (or % ""))
    :capitalize #(str/capitalize (or % ""))
    :toKeyword keyword
+   :trim str/trim
    :hash hash
    :toInt (fn [v] (if (string? v)
                     (try
