@@ -107,19 +107,19 @@ tests:
         price: 8.99
 
 
-  # - desc: path with deep wildcards collects all values regardless its level
-  #   scope:
-  #     <<: *goessner
-  #   template:
-  #     prices: $ store.**.price
-  #   result:
-  #     prices:
-  #       - 8.95
-  #       - 12.99
-  #       - 8.99
-  #       - 22.99
-  #       - 19.95
-  #       - 1.3
+  - desc: path with deep wildcards collects all values regardless its level
+    scope:
+      <<: *goessner
+    template:
+      prices: $ store.**.price
+    result:
+      prices:
+        - 8.95
+        - 12.99
+        - 8.99
+        - 22.99
+        - 19.95
+        - 1.3
 
   - desc: path with multiple wildcards returns array of values
     scope:
@@ -207,6 +207,15 @@ tests:
       bar: $ -10
     result:
       bar: -10
+
+  - desc: single-quoted and double-quoted string literal
+    scope:
+    template:
+      foo: $ 'foo'
+      bar: $ "bar"
+    result:
+      foo: foo
+      bar: bar
 
   # - desc: union operator performs union operation on it\'s operands
   #   scope:
@@ -312,6 +321,14 @@ tests:
     result:
       result: my
 
+  - desc: chaining function calls
+    scope:
+      s: "foo bar bar baz"
+    template:
+      result: $ s |> splitStr(" +") |> uniq
+    result:
+      result: [foo, bar, baz]
+
   - desc: paths can access numeric keys in maps
     scope:
       pid1:
@@ -327,7 +344,6 @@ tests:
     result:
       result1: bar
       result2: bar
-
 
   # - desc: boolean logic expressions are evaluated properly
   #   scope:

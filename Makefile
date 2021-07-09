@@ -17,8 +17,8 @@ js: js/jute.js
 jar:
 	clojure -A:jar
 
-clojars-push: 
-	clojure -A:deploy
+clojars-push:
+	clojure -Spom && clojure -A:deploy
 
 demo: js/jute.js
 	cp js/jute.js demo/jute.js

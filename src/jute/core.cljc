@@ -110,9 +110,11 @@
 (def standard-fns
   {:join str/join       ;; deprecated
    :joinStr str/join
-   :splitStr (fn [s re & [limit]] (str/split s (re-pattern re) (or limit 0)))
+   :splitStr (fn [s re & [limit]] (str/split (or s "") (re-pattern re) (or limit 0)))
    :substring subs      ;; deprecated
    :substr    subs
+   :replace (fn [s re to]
+              (str/replace (or s "") (re-pattern re) to))
    :concat concat
    :merge merge
    :flatten flatten
@@ -124,8 +126,9 @@
    :range range
    :randNth rand-nth
    :toString to-string
-   :toLowerCase str/lower-case
-   :toUpperCase str/upper-case
+   :toLowerCase #(str/lower-case (or % ""))
+   :toUpperCase #(str/upper-case (or % ""))
+   :capitalize #(str/capitalize (or % ""))
    :toKeyword keyword
    :trim str/trim
    :hash hash
@@ -172,6 +175,7 @@
   | multiplicative-expr
   | unary-expr
   | terminal-expr
+  | pipeline-expr
 
 <parens-expr>
   = <'('> expr <')'>
@@ -199,6 +203,9 @@ unary-expr
 
 <terminal-expr>
   = bool-literal / num-literal / string-literal / null-literal / path / fn-call / parens-expr
+
+pipeline-expr
+ = or-expr (<'|>'> (fn-call / path)) +
 
 fn-call
   = path <'('> fn-call-args <')'>
@@ -252,7 +259,7 @@ null-literal
   = 'null' !path-head-comp
 
 string-literal
-  = <'\"'> #'[^\"]*'  <'\"'>
+  = <'\"'> #'[^\"]*'  <'\"'> | <\"'\"> #\"[^']*\"  <\"'\">
 "
    :auto-whitespace :standard))
 
@@ -506,6 +513,15 @@ string-literal
 
                (apply f (mapv #(eval-node % scope) compiled-args))))))
 
+(defn-compile compile-pipeline-expr [[_ first-arg & pipes] options path]
+  (-> (reduce
+        (fn [first-arg pipe]
+          (case (first pipe)
+            :fn-call (into [:fn-call (second pipe)] (cons first-arg (nnext pipe)))
+            :path [:fn-call pipe first-arg]))
+        first-arg pipes)
+      (compile-fn-call options path)))
+
 (defn-compile compile-and-expr [[_ left right] options path]
   (if right
     (let [compiled-left (compile-expression-ast left options path)
@@ -582,8 +598,8 @@ string-literal
                              [(fn [val scope is-multiple?]
                                 (if (sequential? val)
                                   (if is-multiple?
-                                    (mapv #(get % (if (neg? cmp) (+ (count %) cmp) cmp)) val)
-                                    (get val (if (neg? cmp) (+ (count val) cmp) cmp)))
+                                    (mapv #(get % (if (neg? cmp) (+ (count %) cmp) cmp)) (vec val))
+                                    (get (vec val) (if (neg? cmp) (+ (count val) cmp) cmp)))
 
                                   (do
                                     (if is-multiple?
@@ -605,6 +621,14 @@ string-literal
                               [(fn [val scope is-multiple?]
                                  (vec (filter #(compiled-pred (assoc scope :this %)) val)))
                                true])
+
+      (= :path-deep-wildcard t) [(fn [val scope is-multiple?]
+                                   (->> (if is-multiple? val [val])
+                                        (mapcat (partial tree-seq
+                                                  (some-fn map? vector?)
+                                                  #(if (map? %) (vals %) %)))
+                                        (remove nil?)))
+                                 true]
 
       :else
 
@@ -647,6 +671,7 @@ string-literal
    :or-expr compile-or-expr
    :equality-expr compile-op-expr
    :comparison-expr compile-op-expr
+   :pipeline-expr compile-pipeline-expr
    :unary-expr compile-unary-expr
    :num-literal compile-num-literal
    :null-literal compile-null-literal
