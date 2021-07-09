@@ -127,6 +127,7 @@
    :toLowerCase str/lower-case
    :toUpperCase str/upper-case
    :toKeyword keyword
+   :trim str/trim
    :hash hash
    :toInt (fn [v] (if (string? v)
                     (try

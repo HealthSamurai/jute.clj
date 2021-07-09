@@ -79,3 +79,12 @@ tests:
 
     result:
       a: [1, 2, false, null, "foo", "bar"]
+
+  - desc: trim
+    scope:
+      a: "My string  !! "
+    template:
+      a: $ trim(a)
+
+    result:
+      a: "My string  !!"
