@@ -517,17 +517,23 @@ To be written.
 
 ### substr(str, start, end)
 
+### replace(str, regexp, replacement)
+
 ### randNth(array)
 
 ### concat(arrays...)
 
 ### merge(objects...)
 
+### str(val)
+
 ### toStr(val)
 
 ### toInt(str)
 
 ### toDec(str)
+
+### toKeyword(str)
 
 ### hash(any)
 
@@ -541,6 +547,8 @@ To be written.
 
 ### capitalize(s)
 
+### trim(s)
+
 ### range(begin, end, step)
 
 ### flatten(array)
@@ -552,6 +560,8 @@ To be written.
 ### dropBlanks(any)
 
 ### uniq(array)
+
+### now()
 
 # License
 
