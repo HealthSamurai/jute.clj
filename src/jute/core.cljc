@@ -22,6 +22,10 @@
                                {} n)]
                 (if (empty? nn) nil nn))
 
+              (vector? n)
+              (let [nn (into [] (remove nil? (map drop-blanks n)))]
+                (if (empty? nn) nil nn))
+
               (sequential? n)
               (let [nn (remove nil? (map drop-blanks n))]
                 (if (empty? nn) nil nn))
