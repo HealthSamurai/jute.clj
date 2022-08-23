@@ -446,7 +446,7 @@ string-literal
       (eval-fn path [scope]
                (mapv #(eval-node % scope) result))
 
-      result)))
+      (into [] result))))
 
 (defn gt-operator [a b]
   (if (and (string? a) (string? b))
