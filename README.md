@@ -25,7 +25,7 @@ relatively hard to write JSON by hands. That's why JUTE's primary
 format is [YAML](https://yaml.org/), which is much easier to read and
 write, thanks to its clean syntax and indentation-based nesting. Don't
 be confused with it, YAML and JSON are interchangeable, and there are
-even [online conversion tools](https://www.json2yaml.com/) beetween them:
+even [online conversion tools](https://www.json2yaml.com/) between them:
 
 <table>
 <thead>
@@ -36,19 +36,12 @@ even [online conversion tools](https://www.json2yaml.com/) beetween them:
 
 ```yml
 {
-  "speaker": {
-    "login": "mlapshin",
-    "email": "mlapshin@health-samurai.io"
-  },
+  "speaker": { "login": "mlapshin", "email": "mlapshin@health-samurai.io" },
   "fhir?": true,
-  "topics": [
-    "mapping",
-    "dsl",
-    "jute",
-    "fhir"
-  ]
+  "topics": ["mapping", "dsl", "jute", "fhir"],
 }
 ```
+
 </td><td>
 
 ```yml
@@ -62,6 +55,7 @@ topics:
   - jute
   - fhir
 ```
+
 </td></tr>
 </tbody>
 </table>
@@ -78,16 +72,16 @@ book:
     gender: m
   title: Approach to Cockroach
   chapters:
-  - type: preface
-    content: A preface chapter
-  - type: content
-    content: Chapter 1
-  - type: content
-    content: Chapter 2
-  - type: content
-    content: Chapter 3
-  - type: afterwords
-    content: Afterwords
+    - type: preface
+      content: A preface chapter
+    - type: content
+      content: Chapter 1
+    - type: content
+      content: Chapter 2
+    - type: content
+      content: Chapter 3
+    - type: afterwords
+      content: Afterwords
 ```
 
 And for some case we need to convert it into a slightly different
@@ -98,9 +92,9 @@ type: book
 author: M. Soloviev
 title: Approach to Cockroach
 content:
-- Chapter 1
-- Chapter 2
-- Chapter 3
+  - Chapter 1
+  - Chapter 2
+  - Chapter 3
 ```
 
 Here we're going to discard preface and
@@ -121,11 +115,13 @@ We'll start our template with a `type: book` flag:
 ```yml
 type: "book"
 ```
+
 </td><td>
 
 ```yml
 type: "book"
 ```
+
 </td></tr>
 </tbody>
 </table>
@@ -152,12 +148,14 @@ author's name from an incoming data:
 type: "book"
 author: "$ book.author.name"
 ```
+
 </td><td>
 
 ```yml
 type: "book"
 author: "M. Soloviev"
 ```
+
 </td></tr>
 </tbody>
 </table>
@@ -170,15 +168,14 @@ describe various operations on an incoming data or a **scope**.
 
 One of expression's abilities is an extract data by **path**. Every
 path consists of one or several **path components** separated by
-dot. In simpliest case a path component is a field name where JUTE
+dot. In simplest case a path component is a field name where JUTE
 interpreter will dig to get value. In our case it fill take the `book`
 field from the scope root, then `author`, then `name`. You can use
 digits as path component as well to get N-th value from an
 array. Array indices are starting with 0.
 
 Please note that it's ok to omit double-quotes (`"`) for strings in
-YAML, so instead of writing `"$ foo.bar"` we can just write `$
-foo.bar`.
+YAML, so instead of writing `"$ foo.bar"` we can just write `$ foo.bar`.
 
 We can fill the `title` field using similar path expression and omit
 double-quotes for readability:
@@ -195,6 +192,7 @@ type: book
 author: $ book.author.name
 title: $ book.title
 ```
+
 </td><td>
 
 ```yml
@@ -202,6 +200,7 @@ type: book
 author: M. Soloviev
 title: Approach to Cockroach
 ```
+
 </td></tr>
 </tbody>
 </table>
@@ -223,6 +222,7 @@ author: $ book.author.name
 title: $ book.title
 content: $ book.chapters.*(this.type = "content")
 ```
+
 </td><td>
 
 ```yml
@@ -230,13 +230,14 @@ type: book
 author: M. Soloviev
 title: Approach to Cockroach
 content:
-- type: content
-  content: Chapter 1
-- type: content
-  content: Chapter 2
-- type: content
-  content: Chapter 3
+  - type: content
+    content: Chapter 1
+  - type: content
+    content: Chapter 2
+  - type: content
+    content: Chapter 3
 ```
+
 </td></tr>
 </tbody>
 </table>
@@ -250,7 +251,7 @@ there is only one element matching criteria.
 The final step is to extract `content` property from every element in
 the `content` array. In most programming languages nowadays it's done
 using a [map
-function](https://en.wikipedia.org/wiki/Map_(higher-order_function))
+function](<https://en.wikipedia.org/wiki/Map_(higher-order_function)>)
 which executes same code on every element in an array and returns
 results an array with preserved order. In JUTE we have `map` as well,
 but it's not a function, it's a **directive**:
@@ -266,11 +267,12 @@ but it's not a function, it's a **directive**:
 type: book
 author: $ book.author.name
 title: $ book.title
-content: 
+content:
   $map: $ book.chapters.*(this.type = "content")
   $as: i
   $body: $ i.content
 ```
+
 </td><td>
 
 ```yml
@@ -278,10 +280,11 @@ type: book
 author: M. Soloviev
 title: Approach to Cockroach
 content:
-- Chapter 1
-- Chapter 2
-- Chapter 3
+  - Chapter 1
+  - Chapter 2
+  - Chapter 3
 ```
+
 </td></tr>
 </tbody>
 </table>
@@ -299,7 +302,7 @@ little bit every aspect of a JUTE language.
 
 # An FizzBuzz Example
 
-A classicall [FizzBuzz](http://wiki.c2.com/?FizzBuzzTest) programm in JUTE:
+A classical [FizzBuzz](http://wiki.c2.com/?FizzBuzzTest) program in JUTE:
 
 ```yaml
 $call: join-str
@@ -333,7 +336,7 @@ $args:
 **Template** - a JSON-like data structure to be evaluated by JUTE.
 
 **Scope** - an object where JUTE looks up values and functions to
-evaluate expressions and directives. 
+evaluate expressions and directives.
 
 **Expression** - a string value within a template starting with a
 dollar sign which will be evaluated by JUTE.
@@ -344,7 +347,7 @@ keys starting with a dollar sign with custom evaluation logic.
 ## Expressions
 
 I'm quite short in time right now to describe full expressions
-syntax. To get some understaing of them please take a look at the
+syntax. To get some understating of them please take a look at the
 [expressions test
 suite](https://github.com/HealthSamurai/jute.clj/blob/master/spec/expressions.yml). Commented
 out pieces are still need to be implemented.
@@ -389,11 +392,11 @@ instead.
 
 ```yaml
 funnyStuff:
-  $map: 
-  - 1
-  - 2
-  - 3
-  - 4
+  $map:
+    - 1
+    - 2
+    - 3
+    - 4
   $as: item
   $body: $ item * 2
 ```
@@ -408,7 +411,6 @@ funnyStuff:
   $as: [guy, idx]
   $body: $ "hello, " + idx
 ```
-
 
 ### $reduce
 
@@ -431,7 +433,7 @@ $body:
 ### $fn
 
 `$fn` directive returns a function which can be invoked later in an
-expresson. Value of an `$fn` key is an array containing names of
+expression. Value of an `$fn` key is an array containing names of
 function arguments. `$body` key contains function body.
 
 Most likely you'll put an `$fn` directive into `$let` directive to
@@ -454,7 +456,7 @@ $let:
   fib:
     $fn: ["n"]
     $name: fib
-    $body: 
+    $body:
       $if: $ n <= 1
       $then: 1
       $else: $ fib(n - 1) + fib(n - 2)
@@ -497,7 +499,7 @@ gender:
 ### $reduce
 
 `$reduce` directive performs standard [reduce
-operation](https://en.wikipedia.org/wiki/Fold_(higher-order_function)):
+operation](<https://en.wikipedia.org/wiki/Fold_(higher-order_function)>):
 
 ```yaml
 sum:
@@ -565,6 +567,6 @@ To be written.
 
 # License
 
-Copyright © 2019 Health Samurai Team
+Copyright © 2022 Health Samurai Team
 
 Distributed under the MIT License.

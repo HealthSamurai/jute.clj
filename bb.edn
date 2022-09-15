@@ -1,0 +1,12 @@
+{:tasks {lint                 {:doc  "Lint source code"
+                               :task (clojure "-Sdeps '{:deps {clj-kondo/clj-kondo {:mvn/version \"RELEASE\"}}} '-m clj-kondo.main --lint src:test --parallel --fail-level error")}
+
+
+         eastwood             {:doc  "Lint wrong ns names"
+                               :task (clojure "-M:test:runner:eastwood")}
+
+         kibit                {:doc  " Lint source code and return suggestions "
+                               :task (clojure "-A:kibit")}
+
+         outdated             {:doc  "Check outdated libraries"
+                               :task (clojure " -Sdeps '{:deps {com.github.liquidz/antq {:mvn/version \"RELEASE\"}}} '-M -m antq.core ")}}}

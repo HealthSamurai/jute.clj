@@ -1,13 +1,13 @@
-{:paths ["src" "resources"  ]
- :deps {io.forward/yaml      {:mvn/version "1.0.9" :exclusions [org.flatland/ordered]}
-        org.flatland/ordered {:mvn/version "1.5.7"}
-        org.clojure/clojure  {:mvn/version "1.10.0"}
-        instaparse/instaparse {:mvn/version"1.4.8"}}
+{:paths ["src" "resources"]
+ :deps {io.forward/yaml      {:mvn/version "1.0.11" :exclusions [org.flatland/ordered]}
+        org.flatland/ordered {:mvn/version "1.15.10"}
+        org.clojure/clojure  {:mvn/version "1.11.1"}
+        instaparse/instaparse {:mvn/version "1.4.12"}}
 
  :aliases
  {:jar
   {:extra-deps
-   {luchiniatwork/cambada {:mvn/version "1.0.0"}}
+   {luchiniatwork/cambada {:mvn/version "1.0.5"}}
    :main-opts ["-m" "cambada.jar"
                "-m" "jute.core"
                "--app-group-id" "com.health-samurai"
@@ -20,15 +20,24 @@
 
   :cljs
   {:extra-deps
-   {org.clojure/clojurescript     {:mvn/version "1.10.520"}}}
+   {org.clojure/clojurescript     {:mvn/version "1.11.60"}}}
+
+  :eastwood
+  {:main-opts ["-m" "eastwood.lint" {:continue-on-exception true}]
+   :extra-deps {jonase/eastwood {:mvn/version "1.3.0"}}}
+
+  :kibit
+  {:extra-deps {jonase/kibit {:mvn/version "0.1.8"}}
+   :main-opts ["-e"
+               "(require,'[kibit.driver,:as,k]),(k/external-run,[\"src\"],nil)"]}
+
 
   :nrepl
   {:extra-deps
    {spyscope/spyscope             {:mvn/version "0.1.6"}
-    org.clojure/clojure           {:mvn/version "1.10.0-RC4"}
     org.clojure/tools.nrepl       {:mvn/version "0.2.13"}
-    cider/cider-nrepl             {:mvn/version "0.22.3"}
-    refactor-nrepl/refactor-nrepl {:mvn/version "2.4.0-SNAPSHOT"}}
+    cider/cider-nrepl             {:mvn/version "0.28.5"}
+    refactor-nrepl/refactor-nrepl {:mvn/version "3.5.5"}}
    :jvm-opts ^:replace ["-XX:-OmitStackTraceInFastThrow"]
    :extra-paths ["dev"]}
 
@@ -36,5 +45,5 @@
 
   :runner {:extra-deps {com.cognitect/test-runner
                         {:git/url "https://github.com/cognitect-labs/test-runner"
-                         :sha "3cb0a9daf1cb746259dc8309b218f9211ad3b33b"}}
+                         :sha "a85b3b02765fb68684ab9ee4a8598eacf7e471d2"}}
            :main-opts ["-m" "runner"]}}}

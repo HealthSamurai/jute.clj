@@ -17,7 +17,10 @@
   },
   "homepage": "https://github.com/HealthSamurai/jute.clj#readme",
   "dependencies": {
-    "js-yaml": "^3.13.1",
-    "tap": "^14.6.1"
+    "js-yaml": "4.1.0",
+    "tap": "16.3.0"
+  },
+  "devDependencies": {
+    "@types/tap": "15.0.7"
   }
 }
