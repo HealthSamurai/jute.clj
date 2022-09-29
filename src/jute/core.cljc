@@ -191,7 +191,7 @@ additive-expr
   = additive-expr  ('+' | '-') multiplicative-expr | multiplicative-expr
 
 multiplicative-expr
-  = multiplicative-expr ('*' | '/' | '%') unary-expr | unary-expr
+  = multiplicative-expr ('*' | '/' | '%' | '^') unary-expr | unary-expr
 
 and-expr
   = and-expr <'&&'> equality-expr | equality-expr
@@ -474,6 +474,7 @@ string-literal
   {"+" (fn [a b] (if (string? a) (str a b) (+ a b)))
    "-" clojure.core/-
    "*" clojure.core/*
+   "^" (fn [a b] (Math/pow a b))
    "%" clojure.core/rem
    "=" clojure.core/=
    "!=" clojure.core/not=

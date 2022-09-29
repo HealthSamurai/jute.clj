@@ -192,6 +192,14 @@ tests:
     result:
       bar: -2
 
+  - desc: pow operator
+    scope:
+    template:
+      bar: $ 2 ^ 10 + 2
+    result:
+      bar: 1026.0
+
+
   - desc: drastically complex algebraic expression
     scope:
     template:
