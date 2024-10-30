@@ -18,7 +18,7 @@
   "homepage": "https://github.com/HealthSamurai/jute.clj#readme",
   "dependencies": {
     "js-yaml": "4.1.0",
-    "tap": "16.3.3"
+    "tap": "16.3.10"
   },
   "devDependencies": {
     "@types/tap": "15.0.7"
